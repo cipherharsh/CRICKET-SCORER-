@@ -96,6 +96,32 @@
         </div>
     </div>
 
+    <!-- NEXT INNINGS PLAYER ENTRY MODAL POPUP -->
+    <div id="innings-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div class="dynamic-card border p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4">
+            <div class="text-center">
+                <span class="text-3xl">🔄</span>
+                <h3 class="text-lg font-bold mt-2">Set 2nd Innings Lineup</h3>
+                <p class="text-xs dynamic-text-muted mt-1">Configure active players for the chase mapping.</p>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] uppercase font-bold dynamic-text-muted">New Striker Name</label>
+                    <input type="text" id="next-bat1" value="Rahul" class="w-full p-2.5 rounded-xl bg-neutral-900 border border-neutral-600 text-sm text-inherit">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold dynamic-text-muted">New Non-Striker Name</label>
+                    <input type="text" id="next-bat2" value="Hardik" class="w-full p-2.5 rounded-xl bg-neutral-900 border border-neutral-600 text-sm text-inherit">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold dynamic-text-muted">New Bowler Name</label>
+                    <input type="text" id="next-bowl" value="Shami" class="w-full p-2.5 rounded-xl bg-neutral-900 border border-neutral-600 text-sm text-inherit">
+                </div>
+            </div>
+            <button onclick="confirmInningsSwitch()" class="w-full py-3 bg-emerald-500 text-neutral-950 font-black rounded-xl text-xs uppercase tracking-wider hover:bg-emerald-400 transition cursor-pointer" type="button">Start 2nd Innings</button>
+        </div>
+    </div>
+
     <main class="max-w-md mx-auto p-4 pb-12">
 
         <!-- AUTHENTICATION GATEWAY -->
@@ -139,7 +165,6 @@
                 </div>
             </div>
 
-            <!-- New Player Configuration Fields for Umpire Init Entry -->
             <div class="bg-black/10 p-4 rounded-xl border border-neutral-500/20 space-y-3">
                 <p class="text-xs font-black text-emerald-400 uppercase tracking-wider">🎯 Match Lineups (Umpire Only)</p>
                 <div class="grid grid-cols-2 gap-2">
@@ -187,9 +212,7 @@
                 <p id="user-toss-info" class="text-xs opacity-70 italic mt-3 border-t border-neutral-700/50 pt-2"></p>
             </div>
 
-            <!-- Upgraded Scorecard Core Content to fix placeholder limits shown in image_ec24c7.png -->
             <div id="stats-card" class="dynamic-card rounded-2xl p-4 shadow-md grid grid-cols-1 border transition-colors space-y-3">
-                <!-- Batting Stats Header Table Layout -->
                 <div>
                     <div class="grid grid-cols-12 text-[10px] font-bold dynamic-text-muted uppercase tracking-wider pb-1.5 border-b border-neutral-500/20">
                         <span class="col-span-6">Batting</span>
@@ -207,7 +230,6 @@
                         <span class="col-span-3 text-center dynamic-text-muted text-xs flex items-center justify-center" id="user-bat2-balls">0</span>
                     </div>
                 </div>
-                <!-- Bowling Stats Layout with Economy math -->
                 <div class="border-t border-neutral-500/20 pt-2">
                     <div class="grid grid-cols-12 text-[10px] font-bold dynamic-text-muted uppercase tracking-wider pb-1.5 border-b border-neutral-500/20">
                         <span class="col-span-5">Bowling</span>
@@ -251,25 +273,27 @@
             <div id="control-card" class="dynamic-card p-4 rounded-2xl shadow-md space-y-4 border transition-colors">
                 <p class="text-[10px] font-bold dynamic-text-muted uppercase tracking-wider text-center">Tap to Record Ball</p>
                 <div class="grid grid-cols-4 gap-2">
-                    <button onclick="addBall('0')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition active:scale-95 border border-neutral-500/20 cursor-pointer" type="button">0</button>
-                    <button onclick="addBall('1')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition active:scale-95 border border-neutral-500/20 cursor-pointer" type="button">1</button>
-                    <button onclick="addBall('2')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition active:scale-95 border border-neutral-500/20 cursor-pointer" type="button">2</button>
-                    <button onclick="addBall('3')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition active:scale-95 border border-neutral-500/20 cursor-pointer" type="button">3</button>
+                    <button onclick="addBall('0')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">0</button>
+                    <button onclick="addBall('1')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">1</button>
+                    <button onclick="addBall('2')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">2</button>
+                    <button onclick="addBall('3')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">3</button>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="addBall('4')" class="p-4 bg-teal-600 hover:bg-teal-500 text-white font-black rounded-xl text-2xl transition active:scale-95 shadow-md cursor-pointer" type="button">FOUR (4)</button>
-                    <button onclick="addBall('6')" class="p-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-2xl transition active:scale-95 shadow-md cursor-pointer" type="button">SIX (6)</button>
+                    <button onclick="addBall('4')" class="p-4 bg-teal-600 hover:bg-teal-500 text-white font-black rounded-xl text-2xl transition shadow-md cursor-pointer" type="button">FOUR (4)</button>
+                    <button onclick="addBall('6')" class="p-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-2xl transition shadow-md cursor-pointer" type="button">SIX (6)</button>
                 </div>
                 <div class="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-500/20">
-                    <button onclick="addBall('Wd')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 transition active:scale-95 shadow cursor-pointer" type="button">Wide</button>
-                    <button onclick="addBall('Nb')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 transition active:scale-95 shadow cursor-pointer" type="button">No Ball</button>
-                    <button onclick="addBall('W')" class="p-3 bg-rose-600 text-white font-black rounded-xl text-sm hover:bg-rose-500 transition active:scale-95 shadow cursor-pointer" type="button">WICKET</button>
+                    <button onclick="addBall('Wd')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 transition shadow cursor-pointer" type="button">Wide</button>
+                    <button onclick="addBall('Nb')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 transition shadow cursor-pointer" type="button">No Ball</button>
+                    <button onclick="addBall('W')" class="p-3 bg-rose-600 text-white font-black rounded-xl text-sm hover:bg-rose-500 transition shadow cursor-pointer" type="button">WICKET</button>
                 </div>
             </div>
             
-            <div class="flex space-x-2">
-                <button onclick="undoLastBall()" class="w-1/2 py-2.5 bg-neutral-500/20 text-inherit text-xs font-bold rounded-xl tracking-wider border border-neutral-500/40 hover:bg-neutral-500/30 transition cursor-pointer" type="button">↩️ UNDO BALL</button>
-                <button onclick="resetMatchData()" class="w-1/2 py-2.5 bg-rose-950/20 text-rose-500 text-xs font-bold rounded-xl tracking-wider border border-rose-900/50 hover:bg-rose-900/30 transition cursor-pointer" type="button">🔄 RESET MATCH</button>
+            <!-- Upgraded Action Row Grid to host the 3rd button seamlessly as shown in image_ec0ae4.png -->
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="undoLastBall()" class="py-2.5 bg-neutral-500/20 text-inherit text-xs font-bold rounded-xl tracking-wider border border-neutral-500/40 hover:bg-neutral-500/30 transition cursor-pointer" type="button">↩️ UNDO BALL</button>
+                <button onclick="triggerInningsOver()" class="py-2.5 bg-amber-500/20 text-amber-400 text-xs font-black rounded-xl tracking-wider border border-amber-900/50 hover:bg-amber-900/30 transition cursor-pointer" type="button">🛑 INNINGS OVER</button>
+                <button onclick="resetMatchData()" class="py-2.5 bg-rose-950/20 text-rose-500 text-xs font-bold rounded-xl tracking-wider border border-rose-900/50 hover:bg-rose-900/30 transition cursor-pointer" type="button">🔄 RESET MATCH</button>
             </div>
 
             <!-- LIVE BOWLED PANEL WITH HORIZONTAL SLIDER -->
@@ -447,7 +471,6 @@
             if(currentUserRole !== 'umpire') return;
             let battingTeam = (tossWinnerGlobal === lockedTeam1) ? (decision === 'bat' ? lockedTeam1 : lockedTeam2) : (decision === 'bat' ? lockedTeam2 : lockedTeam1);
             
-            // Extract the custom names defined by the umpire
             const b1 = document.getElementById('input-bat1').value.trim() || "Rohit";
             const b2 = document.getElementById('input-bat2').value.trim() || "Virat";
             const bw = document.getElementById('input-bowl').value.trim() || "Bumrah";
@@ -463,16 +486,50 @@
             }).then(() => { switchView('admin'); });
         }
 
+        // --- NEW INNINGS SWITCH ENGINE OVERRIDES ---
+        function triggerInningsOver() {
+            if (currentUserRole !== 'umpire') return;
+            if (!confirm("Are you sure this innings is over? This will rotate batting sides and prepare the scorecard for the second innings chase.")) return;
+            
+            // Pop the configure entry modal overlay
+            document.getElementById('innings-modal').classList.remove('hidden');
+        }
+
+        function confirmInningsSwitch() {
+            const nb1 = document.getElementById('next-bat1').value.trim() || "Rahul";
+            const nb2 = document.getElementById('next-bat2').value.trim() || "Hardik";
+            const nbw = document.getElementById('next-bowl').value.trim() || "Shami";
+
+            // Determine the trailing side to setup the chase parameters
+            let nextBattingTeam = localMatchState.battingTeam === localMatchState.team1 ? localMatchState.team2 : localMatchState.team1;
+
+            const secondInningsState = {
+                status: "live",
+                team1: localMatchState.team1,
+                team2: localMatchState.team2,
+                battingTeam: nextBattingTeam,
+                tossText: `Target to win: ${localMatchState.runs + 1} runs.`,
+                runs: 0, wickets: 0, ballsCount: 0, ballsHistory: [],
+                bat1Name: nb1, bat1Runs: 0, bat1Balls: 0,
+                bat2Name: nb2, bat2Runs: 0, bat2Balls: 0,
+                activeStriker: 1,
+                bowlName: nbw, bowlBalls: 0, bowlRuns: 0, bowlWickets: 0
+            };
+
+            matchRef.set(secondInningsState).then(() => {
+                document.getElementById('innings-modal').classList.add('hidden');
+            });
+        }
+
         function addBall(outcome) {
             if (localMatchState.status !== 'live' || currentUserRole !== 'umpire') return;
             
-            let state = JSON.parse(JSON.stringify(localMatchState)); // deep copy clone
+            let state = JSON.parse(JSON.stringify(localMatchState)); 
             if (!state.ballsHistory) state.ballsHistory = [];
             state.ballsHistory.push(outcome);
 
             let runsScoredOnBall = 0;
             let isLegalDelivery = true;
-            let isWicket = (outcome === 'W');
 
             if (outcome === 'Wd' || outcome === 'Nb') {
                 state.runs += 1;
@@ -484,7 +541,6 @@
                 state.wickets += 1;
                 state.bowlWickets += 1;
                 
-                // Striker faced a legal delivery but got out
                 if (state.activeStriker === 1) state.bat1Balls += 1;
                 else state.bat2Balls += 1;
             } else {
@@ -494,7 +550,6 @@
                 state.bowlBalls += 1;
                 state.bowlRuns += runsScoredOnBall;
 
-                // Update individual striker's run account
                 if (state.activeStriker === 1) {
                     state.bat1Runs += runsScoredOnBall;
                     state.bat1Balls += 1;
@@ -504,12 +559,10 @@
                 }
             }
 
-            // Handle Strike Rotation on Odd Runs
             if (runsScoredOnBall === 1 || runsScoredOnBall === 3) {
                 state.activeStriker = state.activeStriker === 1 ? 2 : 1;
             }
 
-            // Handle Over-End Strike Rotation (Rotate if over finishes on a legal ball)
             if (isLegalDelivery && (state.ballsCount % 6 === 0) && state.ballsCount > 0) {
                 state.activeStriker = state.activeStriker === 1 ? 2 : 1;
             }
@@ -519,12 +572,10 @@
 
         function undoLastBall() {
             if (currentUserRole !== 'umpire') return;
-            // Complete match reset loop is the safest method to compute backward undo actions accurately
             let history = Array.isArray(localMatchState.ballsHistory) ? [...localMatchState.ballsHistory] : [];
             if (history.length === 0) return;
-            history.pop(); // discard the last item
+            history.pop(); 
 
-            // Reconstruct the state tracking sequence from baseline
             let freshState = getInitialCleanState();
             freshState.status = "live";
             freshState.team1 = localMatchState.team1;
@@ -535,15 +586,11 @@
             freshState.bat2Name = localMatchState.bat2Name;
             freshState.bowlName = localMatchState.bowlName;
 
-            // Temporarily swap role contexts to rebuild safely
             let backupRole = currentUserRole;
             currentUserRole = 'umpire';
             localMatchState = freshState;
 
-            // Fast-forward execute the history trail up to length-1
-            history.forEach(ball => {
-                addBall(ball);
-            });
+            history.forEach(ball => { addBall(ball); });
             currentUserRole = backupRole;
         }
 
@@ -567,7 +614,6 @@
             const bCount = data.ballsCount || 0;
             const oversString = `${Math.floor(bCount / 6)}.${bCount % 6}`;
 
-            // 1. Render Spectator Card Core Figures
             const batTeamField = document.getElementById('user-batting-team');
             if (batTeamField) {
                 batTeamField.innerText = data.battingTeam || "Batting Team";
@@ -576,7 +622,6 @@
                 document.getElementById('user-overs').innerText = `(${oversString} Overs)`;
             }
 
-            // 2. Render Real-Time Player & Economy Scorecard Stats
             if (document.getElementById('user-bat1-name')) {
                 document.getElementById('user-bat1-name').innerText = data.bat1Name || "Batsman 1";
                 document.getElementById('user-bat1-runs').innerText = data.bat1Runs || 0;
@@ -589,18 +634,13 @@
                 document.getElementById('user-bowl-name').innerText = data.bowlName || "Bowler";
                 
                 const bOvers = data.bowlBalls || 0;
-                const bowlerOversFormatted = `${Math.floor(bOvers / 6)}.${bOvers % 6}`;
-                document.getElementById('user-bowl-overs').innerText = bowlerOversFormatted;
+                document.getElementById('user-bowl-overs').innerText = `${Math.floor(bOvers / 6)}.${bOvers % 6}`;
                 document.getElementById('user-bowl-wickets').innerText = data.bowlWickets || 0;
 
-                // Calculate Bowler Economy Rate
                 let econ = 0.00;
-                if (bOvers > 0) {
-                    econ = (data.bowlRuns / (bOvers / 6));
-                }
+                if (bOvers > 0) econ = (data.bowlRuns / (bOvers / 6));
                 document.getElementById('user-bowl-econ').innerText = econ.toFixed(2);
 
-                // Update active strike asterisks highlight views
                 if (data.activeStriker === 1) {
                     document.getElementById('user-bat1-dot').classList.remove('hidden');
                     document.getElementById('user-bat2-dot').classList.add('hidden');
@@ -614,7 +654,6 @@
                 }
             }
 
-            // 3. Render Umpire Overview Metrics Panel
             const umpScore = document.getElementById('umpire-live-score-text');
             if (umpScore) {
                 umpScore.innerText = `${data.runs || 0} - ${data.wickets || 0}`;
