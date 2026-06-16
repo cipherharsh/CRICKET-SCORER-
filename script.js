@@ -1,0 +1,1 @@
+const UMPIRE_PIN = "7777";
