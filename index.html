@@ -43,7 +43,6 @@
             color: var(--select-text) !important;
         }
 
-        /* Custom scrollbar styling to make the horizontal slidebar visible and premium */
         .custom-slider::-webkit-scrollbar {
             height: 6px;
         }
@@ -208,7 +207,7 @@
 
             <div id="recent-card" class="dynamic-card p-4 rounded-2xl shadow-md border transition-colors">
                 <p class="text-[10px] font-bold dynamic-text-muted uppercase tracking-wider mb-3">Recent Balls</p>
-                <div id="user-recent-balls" class="flex space-x-2 overflow-x-auto pb-1 min-h-[36px]"></div>
+                <div id="user-recent-balls" class="flex items-center space-x-2 overflow-x-auto pb-1 min-h-[36px]"></div>
             </div>
         </section>
 
@@ -267,9 +266,7 @@
                 <button onclick="resetMatchData()" class="w-1/2 py-2.5 bg-rose-950/20 text-rose-500 text-xs font-bold rounded-xl tracking-wider border border-rose-900/50 hover:bg-rose-900/30 transition active:scale-95 cursor-pointer" type="button">🔄 RESET MATCH</button>
             </div>
 
-            <!-- ========================================== -->
-            <!-- LIVE BOWLED PANEL WITH HORIZONTAL SLIDER    -->
-            <!-- ========================================== -->
+            <!-- LIVE BOWLED PANEL WITH HORIZONTAL SLIDER -->
             <div id="umpire-bowled-card" class="dynamic-card p-4 rounded-2xl shadow-md border border-dashed transition-colors space-y-3">
                 <div class="flex justify-between items-center border-b border-neutral-500/20 pb-2">
                     <p class="text-xs font-black text-emerald-500 uppercase tracking-widest">📋 Live Match Overview Panel</p>
@@ -287,8 +284,7 @@
                 </div>
                 <div>
                     <span class="text-[10px] uppercase font-bold dynamic-text-muted tracking-wider block mb-1.5">Match History Timeline (Swipe/Scroll ↔️)</span>
-                    <!-- Added custom-slider and whitespace-nowrap for horizontal scrollbar support -->
-                    <div id="umpire-recent-balls-timeline" class="flex flex-nowrap overflow-x-auto whitespace-nowrap gap-2 pb-2 min-h-[40px] custom-slider"></div>
+                    <div id="umpire-recent-balls-timeline" class="flex flex-nowrap items-center overflow-x-auto whitespace-nowrap gap-2 pb-2 min-h-[44px] custom-slider"></div>
                 </div>
             </div>
         </section>
@@ -507,7 +503,6 @@
                 return;
             }
             
-            // Render Spectator Card Outputs
             const batTeamField = document.getElementById('user-batting-team');
             if (batTeamField) {
                 batTeamField.innerText = data.battingTeam || "Batting Team";
@@ -517,7 +512,6 @@
                 document.getElementById('user-overs').innerText = `(${Math.floor(bCount / 6)}.${bCount % 6} Overs)`;
             }
 
-            // Render Umpire Panel Live Status Overrides
             const umpScore = document.getElementById('umpire-live-score-text');
             if (umpScore) {
                 const bCount = data.ballsCount || 0;
@@ -526,41 +520,74 @@
                 document.getElementById('umpire-live-overs-count').innerText = `Overs: ${Math.floor(bCount / 6)}.${bCount % 6}`;
             }
 
-            // Spectator timeline row (Keeps showing only the last 6 balls to maintain layout space)
+            // Spectator Timeline (Flat 6 pills)
             const streamContainer = document.getElementById('user-recent-balls');
             if (streamContainer) buildTimelinePills(streamContainer, data.ballsHistory, true);
 
-            // Umpire panel history timeline row (Shows ALL entries with slider access enabled)
+            // Umpire Slider Panel Timeline
             const umpireStreamContainer = document.getElementById('umpire-recent-balls-timeline');
             if (umpireStreamContainer) {
                 buildTimelinePills(umpireStreamContainer, data.ballsHistory, false);
-                
-                // Auto-scroll the timeline slidebar right to the newest entry
-                setTimeout(() => {
-                    umpireStreamContainer.scrollLeft = umpireStreamContainer.scrollWidth;
-                }, 50);
+                setTimeout(() => { umpireStreamContainer.scrollLeft = umpireStreamContainer.scrollWidth; }, 50);
             }
         }
 
-        // Modified wrapper to support continuous entries toggle logic
+        // --- UPDATED TIMELINE RENDERING ENGINE WITH START-OF-OVER SEPARATORS ---
         function buildTimelinePills(container, historyArray, shouldSlice) {
             container.innerHTML = '';
-            if (Array.isArray(historyArray)) {
-                // If shouldSlice is false, we take the entire history array for unlimited scrolling backwards
-                const targetedPool = shouldSlice ? historyArray.slice(-6) : historyArray;
+            if (!Array.isArray(historyArray)) return;
+
+            const targetedPool = shouldSlice ? historyArray.slice(-6) : historyArray;
+            
+            let legalBallCounter = 0;
+            let currentOverIndex = 1;
+
+            // Helper function to dynamically generate standard Over boundaries
+            function injectOverSeparator(overNum) {
+                const separatorContainer = document.createElement('div');
+                separatorContainer.className = "flex flex-shrink-0 items-center h-8 px-1 gap-1 border-r-2 border-dashed border-emerald-500/60 mr-1";
                 
-                targetedPool.forEach(ball => {
-                    const pill = document.createElement('span');
-                    pill.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-xs font-black shadow-sm ";
-                    if (ball === '4') pill.className += "bg-teal-600 text-white";
-                    else if (ball === '6') pill.className += "bg-indigo-600 text-white";
-                    else if (ball === 'W') pill.className += "bg-rose-600 text-white animate-bounce";
-                    else if (ball === 'Wd' || ball === 'Nb') pill.className += "bg-amber-500 text-slate-950";
-                    else pill.className += isDarkMode ? "bg-neutral-700 text-neutral-300" : "bg-neutral-200 text-neutral-600";
-                    pill.innerText = ball; 
-                    container.appendChild(pill);
-                });
+                const overTag = document.createElement('span');
+                overTag.className = "text-[9px] uppercase font-black tracking-wider bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded";
+                overTag.innerText = `Ov ${overNum}`;
+                
+                separatorContainer.appendChild(overTag);
+                container.appendChild(separatorContainer);
             }
+
+            // UNLIMITED SLIDER VIEW ONLY: Inject "Ov 1" tag at the very beginning of the history chain
+            if (!shouldSlice && targetedPool.length > 0) {
+                injectOverSeparator(currentOverIndex);
+                currentOverIndex++;
+            }
+
+            targetedPool.forEach((ball) => {
+                // Construct ball item pill
+                const pill = document.createElement('span');
+                pill.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-xs font-black shadow-sm z-10 ";
+                
+                if (ball === '4') pill.className += "bg-teal-600 text-white";
+                else if (ball === '6') pill.className += "bg-indigo-600 text-white";
+                else if (ball === 'W') pill.className += "bg-rose-600 text-white animate-bounce";
+                else if (ball === 'Wd' || ball === 'Nb') pill.className += "bg-amber-500 text-slate-950";
+                else pill.className += isDarkMode ? "bg-neutral-700 text-neutral-300" : "bg-neutral-200 text-neutral-600";
+                
+                pill.innerText = ball;
+                container.appendChild(pill);
+
+                if (!shouldSlice) {
+                    if (ball !== 'Wd' && ball !== 'Nb') {
+                        legalBallCounter++;
+                    }
+
+                    // Once 6 legal deliveries are hit, trigger the boundary break for the *next* over entry
+                    if (legalBallCounter === 6) {
+                        legalBallCounter = 0;
+                        injectOverSeparator(currentOverIndex);
+                        currentOverIndex++;
+                    }
+                }
+            });
         }
 
         function switchView(view) {
@@ -570,11 +597,7 @@
             const historyEl = document.getElementById('history-screen');
             if (!setupEl || !userEl || !adminEl || !historyEl) return;
 
-            setupEl.classList.add('hidden'); 
-            userEl.classList.add('hidden'); 
-            adminEl.classList.add('hidden');
-            historyEl.classList.add('hidden');
-
+            setupEl.classList.add('hidden'); userEl.classList.add('hidden'); adminEl.classList.add('hidden'); historyEl.classList.add('hidden');
             if (view === 'setup') setupEl.classList.remove('hidden');
             else if (view === 'user') userEl.classList.remove('hidden');
             else if (view === 'admin') adminEl.classList.remove('hidden');
