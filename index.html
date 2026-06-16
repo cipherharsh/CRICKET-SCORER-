@@ -64,7 +64,7 @@
         .animate-flip { animation: dynamicSpin 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     </style>
 </head>
-<body id="body-theme" class="font-sans antialiased transition-colors duration-300">
+<body id="body-theme" class="font-sans antialiased transition-colors duration-300" onload="updateLiveSquadCounts()">
 
     <!-- Top Navigation Header -->
     <header id="header-theme" class="dynamic-card p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b transition-colors">
@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    <!-- INNINGS OVER SELECTION MODAL -->
+    <!-- INNINGS ENDED SELECTION MODAL -->
     <div id="innings-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
         <div class="dynamic-card border p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4">
             <div class="text-center">
@@ -121,13 +121,12 @@
         </div>
     </div>
 
-    <!-- WICKET MODAL GATEWAY -->
+    <!-- WICKET FALLEN SELECTION MODAL -->
     <div id="wicket-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
         <div class="dynamic-card border border-rose-500/40 p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4">
             <div class="text-center">
                 <span class="text-3xl animate-bounce inline-block">☝️</span>
                 <h3 class="text-lg font-black text-rose-500 mt-1">Wicket Fallen!</h3>
-                <p class="text-xs dynamic-text-muted">Enter the name of the incoming batsman taking the crease.</p>
             </div>
             <div>
                 <label class="text-[10px] uppercase font-bold dynamic-text-muted block mb-1">Incoming Batsman Name</label>
@@ -137,13 +136,12 @@
         </div>
     </div>
 
-    <!-- NEW OVER COMPLETED: NEW BOWLER MODAL GATEWAY -->
+    <!-- NEW BOWLER OVER SELECTION MODAL -->
     <div id="new-bowler-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
         <div class="dynamic-card border border-emerald-500/40 p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4">
             <div class="text-center">
                 <span class="text-3xl inline-block">🔄</span>
                 <h3 class="text-lg font-black text-emerald-400 mt-1">Over Completed!</h3>
-                <p class="text-xs dynamic-text-muted">Register the new bowler for this upcoming over.</p>
             </div>
             <div>
                 <label class="text-[10px] uppercase font-bold dynamic-text-muted block mb-1">New Bowler Name</label>
@@ -153,10 +151,31 @@
         </div>
     </div>
 
-    <main class="max-w-md mx-auto p-4 pb-12">
+    <!-- NO BALL + RUN MODAL PANEL -->
+    <div id="noball-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+        <div class="dynamic-card border border-amber-500/40 p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4">
+            <div class="text-center">
+                <span class="text-3xl inline-block animate-pulse">⚠️</span>
+                <h3 class="text-lg font-black text-amber-500 mt-1">No Ball Runs Entry</h3>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+                <button onclick="confirmNoBallScore(0)" class="p-3 bg-neutral-700 hover:bg-neutral-600 rounded-xl font-bold text-sm" type="button">+0 Runs</button>
+                <button onclick="confirmNoBallScore(1)" class="p-3 bg-neutral-700 hover:bg-neutral-600 rounded-xl font-bold text-sm" type="button">+1 Run</button>
+                <button onclick="confirmNoBallScore(2)" class="p-3 bg-neutral-700 hover:bg-neutral-600 rounded-xl font-bold text-sm" type="button">+2 Runs</button>
+                <button onclick="confirmNoBallScore(3)" class="p-3 bg-neutral-700 hover:bg-neutral-600 rounded-xl font-bold text-sm" type="button">+3 Runs</button>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="confirmNoBallScore(4)" class="p-3 bg-teal-600 hover:bg-teal-500 text-white font-black rounded-xl text-sm" type="button">+4 Runs</button>
+                <button onclick="confirmNoBallScore(6)" class="p-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-sm" type="button">+6 Runs</button>
+                <button onclick="document.getElementById('noball-modal').classList.add('hidden')" class="p-3 bg-neutral-800 border border-neutral-600 rounded-xl font-bold text-xs" type="button">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-4xl mx-auto p-4 pb-12">
 
         <!-- AUTHENTICATION GATEWAY -->
-        <section id="auth-screen" class="dynamic-card p-6 rounded-2xl shadow-xl space-y-4 border mt-4">
+        <section id="auth-screen" class="max-w-md mx-auto dynamic-card p-6 rounded-2xl shadow-xl space-y-4 border mt-4">
             <h2 id="auth-title" class="text-xl font-black text-center text-emerald-400">Welcome to Scorer Gateway</h2>
             <div class="space-y-3 pt-2">
                 <div>
@@ -182,14 +201,24 @@
             </div>
         </section>
 
-        <!-- SEPARATE ROWS FOR REGISTRATION FORMS (Fixes column constraints) -->
+        <!-- MATCH REGISTRATION CONSOLE WITH LIVE SQUAD MEMBER COUNT CALCULATIONS -->
         <section id="setup-screen" class="hidden dynamic-card p-6 rounded-2xl shadow-xl space-y-6 mt-4 border transition-colors">
             <h2 class="text-xl font-black text-center border-b border-neutral-700/30 pb-3 text-emerald-400">Match Registration Console</h2>
             
-            <div class="space-y-4">
-                <!-- Team A Form Row Block -->
-                <div class="p-4 bg-black/10 rounded-xl border border-neutral-700/30 space-y-3">
-                    <p class="text-xs font-black text-emerald-500 uppercase tracking-wider">👥 Team A Profile</p>
+            <!-- LIVE TOTAL REGISTERED MEMBERS INDICATOR BAR -->
+            <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-center text-xs font-black uppercase tracking-wider">
+                📊 Live Dashboard Counter — Total Registered Match Members: <span id="live-total-combined-count" class="text-sm px-1.5 py-0.5 rounded bg-emerald-500 text-neutral-950 font-black">0</span>
+            </div>
+
+            <!-- Side-by-Side Row Layout for Team A and Team B -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                
+                <!-- Team A Form Layout -->
+                <div class="p-4 bg-black/10 rounded-xl border border-neutral-700/30 space-y-4">
+                    <div class="flex justify-between items-center border-b border-neutral-700/30 pb-1.5">
+                        <p class="text-xs font-black text-emerald-500 uppercase tracking-wider">👥 Team A Profile</p>
+                        <span class="text-[10px] font-bold bg-neutral-800 border border-neutral-700 text-inherit px-2 py-0.5 rounded" id="live-team1-count-label">Squad: 0</span>
+                    </div>
                     <div>
                         <label class="text-[10px] uppercase font-bold dynamic-text-muted">Team A Name</label>
                         <input type="text" id="input-team1" value="Team Alpha" class="w-full p-2.5 rounded-xl bg-neutral-800 border border-neutral-600 mt-0.5 text-xs">
@@ -198,15 +227,24 @@
                         <label class="text-[10px] uppercase font-bold dynamic-text-muted">Team A Captain</label>
                         <input type="text" id="input-cap1" value="Ankit" class="w-full p-2.5 rounded-xl bg-neutral-800 border border-neutral-600 mt-0.5 text-xs text-inherit">
                     </div>
-                    <div>
-                        <label class="text-[10px] uppercase font-bold dynamic-text-muted">Squad Members (Comma Separated)</label>
-                        <textarea id="input-squad1" class="w-full p-2 rounded-xl bg-neutral-800 border border-neutral-600 mt-0.5 text-xs text-inherit h-16" placeholder="Ankit, Aryan, Vivek..."></textarea>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold dynamic-text-muted block">Squad Members (Separate Individual Rows)</label>
+                        <div id="squad1-box-container" class="space-y-1.5">
+                            <input type="text" oninput="updateLiveSquadCounts()" class="squad1-player-input w-full p-2 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-inherit" value="Ankit">
+                            <input type="text" oninput="updateLiveSquadCounts()" class="squad1-player-input w-full p-2 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-inherit" value="Aryan">
+                            <input type="text" oninput="updateLiveSquadCounts()" class="squad1-player-input w-full p-2 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-inherit" value="Vivek">
+                        </div>
+                        <button onclick="addNewPlayerInputRow(1)" class="text-[10px] bg-neutral-700 hover:bg-neutral-600 text-white font-bold px-2 py-1 rounded mt-1 transition cursor-pointer" type="button">+ Add Player Row</button>
                     </div>
                 </div>
 
-                <!-- Team B Form Row Block -->
-                <div class="p-4 bg-black/10 rounded-xl border border-neutral-700/30 space-y-3">
-                    <p class="text-xs font-black text-emerald-500 uppercase tracking-wider">👥 Team B Profile</p>
+                <!-- Team B Form Layout -->
+                <div class="p-4 bg-black/10 rounded-xl border border-neutral-700/30 space-y-4">
+                    <div class="flex justify-between items-center border-b border-neutral-700/30 pb-1.5">
+                        <p class="text-xs font-black text-emerald-500 uppercase tracking-wider">👥 Team B Profile</p>
+                        <span class="text-[10px] font-bold bg-neutral-800 border border-neutral-700 text-inherit px-2 py-0.5 rounded" id="live-team2-count-label">Squad: 0</span>
+                    </div>
                     <div>
                         <label class="text-[10px] uppercase font-bold dynamic-text-muted">Team B Name</label>
                         <input type="text" id="input-team2" value="Team Omega" class="w-full p-2.5 rounded-xl bg-neutral-800 border border-neutral-600 mt-0.5 text-xs">
@@ -215,30 +253,36 @@
                         <label class="text-[10px] uppercase font-bold dynamic-text-muted">Team B Captain</label>
                         <input type="text" id="input-cap2" value="Yash" class="w-full p-2.5 rounded-xl bg-neutral-800 border border-neutral-600 mt-0.5 text-xs text-inherit">
                     </div>
-                    <div>
-                        <label class="text-[10px] uppercase font-bold dynamic-text-muted">Squad Members (Comma Separated)</label>
-                        <textarea id="input-squad2" class="w-full p-2 rounded-xl bg-neutral-800 border border-neutral-600 mt-0.5 text-xs text-inherit h-16" placeholder="Yash, Harshal, Meet..."></textarea>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold dynamic-text-muted block">Squad Members (Separate Individual Rows)</label>
+                        <div id="squad2-box-container" class="space-y-1.5">
+                            <input type="text" oninput="updateLiveSquadCounts()" class="squad2-player-input w-full p-2 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-inherit" value="Yash">
+                            <input type="text" oninput="updateLiveSquadCounts()" class="squad2-player-input w-full p-2 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-inherit" value="Harshal">
+                            <input type="text" oninput="updateLiveSquadCounts()" class="squad2-player-input w-full p-2 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-inherit" value="Meet">
+                        </div>
+                        <button onclick="addNewPlayerInputRow(2)" class="text-[10px] bg-neutral-700 hover:bg-neutral-600 text-white font-bold px-2 py-1 rounded mt-1 transition cursor-pointer" type="button">+ Add Player Row</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Virtual Coin Toss -->
-            <div class="bg-black/10 p-4 rounded-xl text-center space-y-4 border border-neutral-500/20">
+            <!-- Virtual Coin Toss Arena -->
+            <div class="max-w-md mx-auto bg-black/10 p-4 rounded-xl text-center space-y-4 border border-neutral-500/20">
                 <p class="text-xs font-black dynamic-text-muted uppercase tracking-wider">🪙 Virtual Coin Toss Arena</p>
                 <div class="coin-viewport my-2"><div id="visual-coin" class="coin-element">🏏</div></div>
                 <button onclick="flipCoin()" id="btn-flip" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-neutral-950 font-black rounded-xl transition text-xs shadow-md cursor-pointer" type="button">🪙 FLIP COIN</button>
                 <p id="toss-result-text" class="text-sm font-black text-emerald-400 tracking-wide min-h-[24px]"></p>
             </div>
 
-            <div id="toss-decision-box" class="hidden space-y-3">
+            <div id="toss-decision-box" class="max-w-md mx-auto hidden space-y-3">
                 <div class="grid grid-cols-2 gap-4">
                     <button onclick="handleTossDecision('bat')" class="py-3 bg-teal-600 hover:bg-teal-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition" type="button">Chose to Bat</button>
                     <button onclick="handleTossDecision('bowl')" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-xs uppercase tracking-wider transition" type="button">Chose to Bowl</button>
                 </div>
             </div>
 
-            <!-- Strategy Setups -->
-            <div id="setup-lineup-box" class="hidden p-4 bg-neutral-800 border border-dashed border-emerald-500/40 rounded-xl space-y-3">
+            <!-- Match Lineups Strategy -->
+            <div id="setup-lineup-box" class="max-w-md mx-auto hidden p-4 bg-neutral-800 border border-dashed border-emerald-500/40 rounded-xl space-y-3">
                 <p class="text-xs font-black text-emerald-400 uppercase tracking-wider">🏏 Opening Over Strategy</p>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -258,12 +302,14 @@
             </div>
         </section>
 
-        <!-- SPECTATOR LIVE VIEW -->
-        <section id="user-screen" class="hidden space-y-4 mt-4">
+        <!-- SPECTATOR LIVE VIEW SCREEN -->
+        <section id="user-screen" class="max-w-md mx-auto hidden space-y-4 mt-4">
+            <div id="match-finished-banner" class="hidden p-4 bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 text-center font-black text-sm uppercase rounded-2xl shadow-lg border-2 border-yellow-300 tracking-wider"></div>
+
             <div id="main-scorecard" class="bg-neutral-800 text-white p-6 rounded-2xl shadow-xl border border-neutral-700/60 transition-all">
                 <div class="flex justify-between items-center text-xs uppercase font-bold tracking-widest opacity-80">
                     <span id="user-batting-team">Batting Team</span>
-                    <span class="px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] uppercase font-black tracking-wider animate-pulse shadow-sm">Live</span>
+                    <span id="live-badge-status" class="px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] uppercase font-black tracking-wider animate-pulse shadow-sm">Live</span>
                 </div>
                 <div class="flex items-baseline space-x-2 mt-3">
                     <span id="user-score" class="text-5xl font-black tracking-tight text-emerald-400">0 - 0</span>
@@ -313,7 +359,7 @@
         </section>
 
         <!-- SPECTATOR HISTORY -->
-        <section id="history-screen" class="hidden dynamic-card p-6 rounded-2xl shadow-xl space-y-4 border mt-4">
+        <section id="history-screen" class="max-w-md mx-auto hidden dynamic-card p-6 rounded-2xl shadow-xl space-y-4 border mt-4">
             <h2 class="text-xl font-black text-center text-emerald-400">Match History Logs</h2>
             <div class="divide-y divide-neutral-700/40 space-y-3 pt-2 text-sm">
                 <div class="pt-3 flex justify-between items-center">
@@ -326,36 +372,41 @@
             </div>
         </section>
 
-        <!-- UMPIRE ACTIONS CONSOLE -->
-        <section id="admin-screen" class="hidden space-y-4 mt-4">
-            <div class="bg-emerald-500 text-neutral-950 p-3 rounded-xl font-bold text-center text-xs uppercase tracking-wider shadow font-black">Umpire Control Console</div>
-            
-            <div id="control-card" class="dynamic-card p-4 rounded-2xl shadow-md space-y-4 border transition-colors">
-                <p class="text-[10px] font-bold dynamic-text-muted uppercase tracking-wider text-center">Tap to Record Ball</p>
-                <div class="grid grid-cols-4 gap-2">
-                    <button onclick="addBall('0')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">0</button>
-                    <button onclick="addBall('1')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">1</button>
-                    <button onclick="addBall('2')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">2</button>
-                    <button onclick="addBall('3')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl transition border border-neutral-500/20 cursor-pointer" type="button">3</button>
+        <!-- UMPIRE ACTIONS CONSOLE SCREEN -->
+        <section id="admin-screen" class="max-w-md mx-auto hidden space-y-4 mt-4">
+            <div id="umpire-finished-banner" class="hidden p-3 bg-blue-600/20 text-blue-400 border border-blue-900 font-bold text-xs text-center rounded-xl uppercase tracking-wider">Match Completed. Final metrics locked down.</div>
+
+            <div id="control-panel-wrapper" class="space-y-4">
+                <div class="bg-emerald-500 text-neutral-950 p-3 rounded-xl font-bold text-center text-xs uppercase tracking-wider shadow font-black">Umpire Control Console</div>
+                
+                <div id="control-card" class="dynamic-card p-4 rounded-2xl shadow-md space-y-4 border transition-colors">
+                    <p class="text-[10px] font-bold dynamic-text-muted uppercase tracking-wider text-center">Tap to Record Ball</p>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="addBall('0')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl border border-neutral-500/20 cursor-pointer" type="button">0</button>
+                        <button onclick="addBall('1')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl border border-neutral-500/20 cursor-pointer" type="button">1</button>
+                        <button onclick="addBall('2')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl border border-neutral-500/20 cursor-pointer" type="button">2</button>
+                        <button onclick="addBall('3')" class="p-4 bg-neutral-500/20 hover:bg-neutral-500/40 font-black rounded-xl text-xl border border-neutral-500/20 cursor-pointer" type="button">3</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="addBall('4')" class="p-4 bg-teal-600 hover:bg-teal-500 text-white font-black rounded-xl text-2xl shadow-md cursor-pointer" type="button">FOUR (4)</button>
+                        <button onclick="addBall('6')" class="p-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-2xl shadow-md cursor-pointer" type="button">SIX (6)</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-500/20">
+                        <button onclick="addBall('Wd')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 shadow cursor-pointer" type="button">Wide</button>
+                        <button onclick="addBall('Nb')" class="p-3 bg-amber-600 text-white font-black rounded-xl text-xs hover:bg-amber-500 shadow cursor-pointer" type="button">No Ball+Run</button>
+                        <button onclick="addBall('W')" class="p-3 bg-rose-600 text-white font-black rounded-xl text-sm hover:bg-rose-500 shadow cursor-pointer" type="button">WICKET</button>
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="addBall('4')" class="p-4 bg-teal-600 hover:bg-teal-500 text-white font-black rounded-xl text-2xl transition shadow-md cursor-pointer" type="button">FOUR (4)</button>
-                    <button onclick="addBall('6')" class="p-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-2xl transition shadow-md cursor-pointer" type="button">SIX (6)</button>
+                
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="undoLastBall()" class="py-2.5 bg-neutral-500/20 text-inherit text-[10px] font-bold rounded-xl tracking-wider border border-neutral-500/40 hover:bg-neutral-500/30 transition cursor-pointer" type="button">↩️ UNDO BALL</button>
+                    <button onclick="triggerInningsOver()" class="py-2.5 bg-amber-500/20 text-amber-400 text-[10px] font-black rounded-xl tracking-wider border border-amber-900/40 hover:bg-amber-900/20 transition cursor-pointer" type="button">🛑 INNINGS ENDED</button>
+                    <button onclick="triggerMatchFinished()" class="py-2.5 bg-blue-500/20 text-blue-400 text-[10px] font-black rounded-xl tracking-wider border border-blue-900/40 hover:bg-blue-900/20 transition cursor-pointer" type="button">🏆 MATCH ENDED</button>
+                    <button onclick="resetMatchData()" class="py-2.5 bg-rose-950/20 text-rose-500 text-[10px] font-bold rounded-xl tracking-wider border border-rose-900/40 hover:bg-rose-900/20 transition cursor-pointer" type="button">🔄 RESET</button>
                 </div>
-                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-500/20">
-                    <button onclick="addBall('Wd')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 transition shadow cursor-pointer" type="button">Wide</button>
-                    <button onclick="addBall('Nb')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 transition shadow cursor-pointer" type="button">No Ball</button>
-                    <button onclick="addBall('W')" class="p-3 bg-rose-600 text-white font-black rounded-xl text-sm hover:bg-rose-500 transition shadow cursor-pointer" type="button">WICKET</button>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="undoLastBall()" class="py-2.5 bg-neutral-500/20 text-inherit text-xs font-bold rounded-xl tracking-wider border border-neutral-500/40 hover:bg-neutral-500/30 transition cursor-pointer" type="button">↩️ UNDO BALL</button>
-                <button onclick="triggerInningsOver()" class="py-2.5 bg-amber-500/20 text-amber-400 text-xs font-black rounded-xl tracking-wider border border-amber-900/50 hover:bg-amber-900/30 transition cursor-pointer" type="button">🛑 INNINGS OVER</button>
-                <button onclick="resetMatchData()" class="py-2.5 bg-rose-950/20 text-rose-500 text-xs font-bold rounded-xl tracking-wider border border-rose-900/50 hover:bg-rose-900/30 transition cursor-pointer" type="button">🔄 RESET MATCH</button>
             </div>
 
-            <!-- LIVE BOWLED PANEL WITH HORIZONTAL SLIDER -->
+            <!-- LIVE BOWLED PANEL -->
             <div id="umpire-bowled-card" class="dynamic-card p-4 rounded-2xl shadow-md border border-dashed transition-colors space-y-3">
                 <div class="flex justify-between items-center border-b border-neutral-500/20 pb-2">
                     <p class="text-xs font-black text-emerald-500 uppercase tracking-widest">📋 Live Match Overview Panel</p>
@@ -402,6 +453,35 @@
         let isDarkMode = true;
         let currentUserRole = "spectator"; 
         let lastWinnersLog = [];
+
+        // --- NEW DYNAMIC LIVE COUNT CALCULATOR MATRIX ---
+        function updateLiveSquadCounts() {
+            const team1Rows = document.querySelectorAll('.squad1-player-input').length;
+            const team2Rows = document.querySelectorAll('.squad2-player-input').length;
+            const combinedTotalCount = team1Rows + team2Rows;
+
+            // Target DOM text content vectors
+            const t1Label = document.getElementById('live-team1-count-label');
+            const t2Label = document.getElementById('live-team2-count-label');
+            const totalLabel = document.getElementById('live-total-combined-count');
+
+            if (t1Label) t1Label.innerText = `Squad: ${team1Rows}`;
+            if (t2Label) t2Label.innerText = `Squad: ${team2Rows}`;
+            if (totalLabel) totalLabel.innerText = combinedTotalCount;
+        }
+
+        function addNewPlayerInputRow(teamNum) {
+            const container = document.getElementById(`squad${teamNum}-box-container`);
+            const newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.className = `squad${teamNum}-player-input w-full p-2 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-inherit mt-1.5`;
+            newInput.placeholder = "Enter Player Name";
+            newInput.setAttribute('oninput', 'updateLiveSquadCounts()');
+            container.appendChild(newInput);
+            
+            // Recalculate layout metrics
+            updateLiveSquadCounts();
+        }
 
         function toggleMenuDrawer() {
             const drawer = document.getElementById('menu-drawer');
@@ -544,8 +624,12 @@
             const t2 = document.getElementById('input-team2').value.trim() || "Team Omega";
             const c1 = document.getElementById('input-cap1').value.trim() || "TBD";
             const c2 = document.getElementById('input-cap2').value.trim() || "TBD";
-            const s1 = document.getElementById('input-squad1').value.trim() || "";
-            const s2 = document.getElementById('input-squad2').value.trim() || "";
+            
+            const s1Inputs = document.querySelectorAll('.squad1-player-input');
+            const s2Inputs = document.querySelectorAll('.squad2-player-input');
+            let s1 = []; s1Inputs.forEach(i => { if(i.value.trim()) s1.push(i.value.trim()); });
+            let s2 = []; s2Inputs.forEach(i => { if(i.value.trim()) s2.push(i.value.trim()); });
+
             const b1 = document.getElementById('input-bat1').value.trim() || "Ankit";
             const b2 = document.getElementById('input-bat2').value.trim() || "Aryan";
             const bw = document.getElementById('input-bowl').value.trim() || "Vivek";
@@ -558,12 +642,34 @@
                 bat2Name: b2, bat2Runs: 0, bat2Balls: 0,
                 activeStriker: 1,
                 bowlName: bw, bowlBalls: 0, bowlRuns: 0, bowlWickets: 0,
-                team1Captain: c1, team2Captain: c2, team1Squad: s1, team2Squad: s2
+                team1Captain: c1, team2Captain: c2, team1Squad: s1.join(', '), team2Squad: s2.join(', ')
             };
             matchRef.set(payloadState).then(() => { switchView('admin'); });
         }
 
-        // --- CORE MATCH LOGIC MATRIX ENGINE ---
+        function triggerNoBallModal() {
+            if (localMatchState.status !== 'live' || currentUserRole !== 'umpire') return;
+            document.getElementById('noball-modal').classList.remove('hidden');
+        }
+
+        function confirmNoBallScore(batRuns) {
+            document.getElementById('noball-modal').classList.add('hidden');
+            let state = JSON.parse(JSON.stringify(localMatchState));
+            if (!state.ballsHistory) state.ballsHistory = [];
+
+            const recordLabel = batRuns > 0 ? `Nb+${batRuns}` : 'Nb';
+            state.ballsHistory.push(recordLabel);
+
+            const grossRunsValue = 1 + batRuns;
+            state.runs += grossRunsValue; state.bowlRuns += grossRunsValue;
+
+            if (state.activeStriker === 1) { state.bat1Runs += batRuns; state.bat1Balls += 1; } 
+            else { state.bat2Runs += batRuns; state.bat2Balls += 1; }
+
+            if (batRuns === 1 || batRuns === 3) { state.activeStriker = state.activeStriker === 1 ? 2 : 1; }
+            matchRef.set(state);
+        }
+
         function addBall(outcome) {
             if (localMatchState.status !== 'live' || currentUserRole !== 'umpire') return;
             let state = JSON.parse(JSON.stringify(localMatchState)); 
@@ -580,29 +686,20 @@
             let isLegalDelivery = true;
             state.ballsHistory.push(outcome);
 
-            if (outcome === 'Wd' || outcome === 'Nb') {
+            if (outcome === 'Wd') {
                 state.runs += 1; state.bowlRuns += 1; isLegalDelivery = false;
             } else {
                 runsScoredOnBall = parseInt(outcome);
                 state.runs += runsScoredOnBall; state.ballsCount += 1; state.bowlBalls += 1; state.bowlRuns += runsScoredOnBall;
 
-                if (state.activeStriker === 1) {
-                    state.bat1Runs += runsScoredOnBall; state.bat1Balls += 1;
-                } else {
-                    state.bat2Runs += runsScoredOnBall; state.bat2Balls += 1;
-                }
+                if (state.activeStriker === 1) { state.bat1Runs += runsScoredOnBall; state.bat1Balls += 1; } 
+                else { state.bat2Runs += runsScoredOnBall; state.bat2Balls += 1; }
             }
 
-            if (runsScoredOnBall === 1 || runsScoredOnBall === 3) {
-                state.activeStriker = state.activeStriker === 1 ? 2 : 1;
-            }
+            if (runsScoredOnBall === 1 || runsScoredOnBall === 3) { state.activeStriker = state.activeStriker === 1 ? 2 : 1; }
 
-            // --- OVER-END CHECKPOINT HANDLING RULES FOR NEW BOWLER INTERCEPT ---
             if (isLegalDelivery && (state.ballsCount % 6 === 0) && state.ballsCount > 0) {
-                // Cross-rotate strike context for the end of the over
                 state.activeStriker = state.activeStriker === 1 ? 2 : 1;
-                
-                // Commit current states first, then prompt the over-end bowler change dialogue modal
                 matchRef.set(state).then(() => {
                     document.getElementById('input-new-bowler').value = '';
                     document.getElementById('new-bowler-modal').classList.remove('hidden');
@@ -616,16 +713,8 @@
         function confirmNewBowler() {
             const nextBowler = document.getElementById('input-new-bowler').value.trim() || "Next Bowler";
             let state = JSON.parse(JSON.stringify(localMatchState));
-            
-            // Re-initialize standalone bowler profile card accounts without wiping team history totals
-            state.bowlName = nextBowler;
-            state.bowlBalls = 0;
-            state.bowlRuns = 0;
-            state.bowlWickets = 0;
-
-            matchRef.set(state).then(() => {
-                document.getElementById('new-bowler-modal').classList.add('hidden');
-            });
+            state.bowlName = nextBowler; state.bowlBalls = 0; state.bowlRuns = 0; state.bowlWickets = 0;
+            matchRef.set(state).then(() => { document.getElementById('new-bowler-modal').classList.add('hidden'); });
         }
 
         function confirmWicketReplacement() {
@@ -635,13 +724,9 @@
             
             state.ballsHistory.push('W'); state.ballsCount += 1; state.bowlBalls += 1; state.wickets += 1; state.bowlWickets += 1;
 
-            if (state.activeStriker === 1) {
-                state.bat1Balls += 1; state.bat1Name = nextBatsmanName; state.bat1Runs = 0; state.bat1Balls = 0;
-            } else {
-                state.bat2Balls += 1; state.bat2Name = nextBatsmanName; state.bat2Runs = 0; state.bat2Balls = 0;
-            }
+            if (state.activeStriker === 1) { state.bat1Balls += 1; state.bat1Name = nextBatsmanName; state.bat1Runs = 0; state.bat1Balls = 0; } 
+            else { state.bat2Balls += 1; state.bat2Name = nextBatsmanName; state.bat2Runs = 0; state.bat2Balls = 0; }
 
-            // Intercept check to see if the wicket completed an over simultaneously
             if (state.ballsCount % 6 === 0 && state.ballsCount > 0) {
                 state.activeStriker = state.activeStriker === 1 ? 2 : 1;
                 matchRef.set(state).then(() => {
@@ -662,10 +747,8 @@
             const removedBall = history.pop(); 
             let freshState = getInitialCleanState();
             freshState.status = "live";
-            freshState.team1 = localMatchState.team1;
-            freshState.team2 = localMatchState.team2;
-            freshState.battingTeam = localMatchState.battingTeam;
-            freshState.tossText = localMatchState.tossText;
+            freshState.team1 = localMatchState.team1; freshState.team2 = localMatchState.team2;
+            freshState.battingTeam = localMatchState.battingTeam; freshState.tossText = localMatchState.tossText;
             
             if (removedBall === 'W') {
                 freshState.bat1Name = document.getElementById('input-bat1').value.trim() || "Ankit";
@@ -681,6 +764,9 @@
                 if (ball === 'W') {
                     state.ballsHistory.push('W'); state.ballsCount += 1; state.bowlBalls += 1; state.wickets += 1; state.bowlWickets += 1;
                     if (state.activeStriker === 1) { state.bat1Balls += 1; } else { state.bat2Balls += 1; }
+                } else if (ball.startsWith('Nb')) {
+                    const runs = ball.includes('+') ? parseInt(ball.split('+')[1]) : 0;
+                    confirmNoBallScore(runs);
                 } else { addBall(ball); }
             });
             currentUserRole = backupRole;
@@ -710,6 +796,12 @@
             matchRef.set(secondInningsState).then(() => { document.getElementById('innings-modal').classList.add('hidden'); });
         }
 
+        function triggerMatchFinished() {
+            if (currentUserRole !== 'umpire') return;
+            if (!confirm("Are you sure you want to end the match?")) return;
+            matchRef.update({ status: "finished" });
+        }
+
         function resetMatchData() {
             if (currentUserRole !== 'umpire' || !confirm("Erase all metrics and start a fresh match?")) return;
             matchRef.set(getInitialCleanState()).then(() => {
@@ -721,6 +813,24 @@
         }
 
         function renderScoreboard(data) {
+            const finishBannerSpec = document.getElementById('match-finished-banner');
+            const finishBannerUmp = document.getElementById('umpire-finished-banner');
+            const controlPanel = document.getElementById('control-panel-wrapper');
+            const liveBadge = document.getElementById('live-badge-status');
+
+            if (data.status === 'finished') {
+                const resultsMessage = `🏆 Match Concluded! Final score: ${data.runs}-${data.wickets}.`;
+                if(finishBannerSpec) { finishBannerSpec.innerText = resultsMessage; finishBannerSpec.classList.remove('hidden'); }
+                if(finishBannerUmp) finishBannerUmp.classList.remove('hidden');
+                if(controlPanel) controlPanel.classList.add('hidden');
+                if(liveBadge) { liveBadge.innerText = "Finished"; liveBadge.className = "px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] uppercase font-black tracking-wider shadow-sm"; }
+            } else {
+                if(finishBannerSpec) finishBannerSpec.classList.add('hidden');
+                if(finishBannerUmp) finishBannerUmp.classList.add('hidden');
+                if(controlPanel) controlPanel.classList.remove('hidden');
+                if(liveBadge) { liveBadge.innerText = "Live"; liveBadge.className = "px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] uppercase font-black tracking-wider animate-pulse shadow-sm"; }
+            }
+
             if (data.status === 'toss') {
                 if (currentUserRole === 'umpire') switchView('setup');
                 else switchView('user');
@@ -808,12 +918,13 @@
                 if (ball === '4') pill.className += "bg-teal-600 text-white";
                 else if (ball === '6') pill.className += "bg-indigo-600 text-white";
                 else if (ball === 'W') pill.className += "bg-rose-600 text-white animate-bounce";
-                else if (ball === 'Wd' || ball === 'Nb') pill.className += "bg-amber-500 text-slate-950";
+                else if (ball.startsWith('Nb')) pill.className += "bg-amber-500 text-slate-950";
+                else if (ball === 'Wd') pill.className += "bg-amber-500 text-slate-950";
                 else pill.className += isDarkMode ? "bg-neutral-700 text-neutral-300" : "bg-neutral-200 text-neutral-600";
                 pill.innerText = ball; container.appendChild(pill);
 
                 if (!shouldSlice) {
-                    if (ball !== 'Wd' && ball !== 'Nb') legalBallCounter++;
+                    if (ball !== 'Wd' && !ball.startsWith('Nb')) legalBallCounter++;
                     if (legalBallCounter === 6) { legalBallCounter = 0; injectOverSeparator(currentOverIndex); currentOverIndex++; }
                 }
             });
