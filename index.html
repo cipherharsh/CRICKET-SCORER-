@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gully Cricket Live Score</title>
+    <!-- Stable Tailwind CSS Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase Compatibility SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -16,6 +18,8 @@
             --text-main: #f5f5f5;
             --text-muted: #a3a3a3;
             --border-color: #404040;
+            --select-bg: #262626;
+            --select-text: #f5f5f5;
         }
         .light-theme {
             --bg-main: #f5f5f5;
@@ -23,10 +27,22 @@
             --text-main: #262626;
             --text-muted: #737373;
             --border-color: #e5e5e5;
+            --select-bg: #ffffff;
+            --select-text: #262626;
         }
         body { background-color: var(--bg-main); color: var(--text-main); }
         .dynamic-card { background-color: var(--bg-card); border-color: var(--border-color); }
         .dynamic-text-muted { color: var(--text-muted); }
+        
+        /* Fixes for dropdown visibility issues shown in image_084c66.png */
+        .dynamic-select {
+            background-color: var(--select-bg) !important;
+            color: var(--select-text) !important;
+        }
+        .dynamic-select option {
+            background-color: var(--select-bg) !important;
+            color: var(--select-text) !important;
+        }
 
         /* 3D Coin Flip Animation Keyframes */
         .coin-viewport { perspective: 1000px; }
@@ -48,16 +64,19 @@
 </head>
 <body id="body-theme" class="font-sans antialiased transition-colors duration-300">
 
+    <!-- Top Navigation Header -->
     <header id="header-theme" class="dynamic-card p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b transition-colors">
         <h1 id="logo-theme" class="text-lg font-black tracking-wider text-emerald-500 flex items-center gap-1">
             <span class="text-xl">🏏</span> SATURDAY NIGHT LIVE
         </h1>
         
+        <!-- Hamburger Menu Button -->
         <button onclick="toggleMenuDrawer()" id="btn-hamburger" class="p-2 rounded-xl bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 transition cursor-pointer hidden" type="button">
             <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
     </header>
 
+    <!-- Slide-Out Mobile Drawer Menu -->
     <div id="menu-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div class="absolute right-0 top-0 bottom-0 w-64 dynamic-card border-l p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300">
             <div class="space-y-6">
@@ -66,8 +85,7 @@
                     <button onclick="toggleMenuDrawer()" class="text-neutral-400 hover:text-white font-bold text-lg cursor-pointer" type="button">✕</button>
                 </div>
                 
-                <nav id="drawer-nav-links" class="flex flex-col gap-2 pt-2">
-                    </nav>
+                <nav id="drawer-nav-links" class="flex flex-col gap-2 pt-2"></nav>
             </div>
 
             <div class="space-y-4 border-t border-neutral-700/50 pt-4">
@@ -82,6 +100,9 @@
 
     <main class="max-w-md mx-auto p-4 pb-12">
 
+        <!-- ========================================== -->
+        <!-- AUTHENTICATION GATEWAY (SIGNUP / LOGIN)     -->
+        <!-- ========================================== -->
         <section id="auth-screen" class="dynamic-card p-6 rounded-2xl shadow-xl space-y-4 border mt-4">
             <h2 id="auth-title" class="text-xl font-black text-center text-emerald-400">Welcome to Scorer Gateway</h2>
             <p class="text-xs dynamic-text-muted text-center">Sign up or Log in to access matches.</p>
@@ -97,7 +118,8 @@
                 </div>
                 <div>
                     <label class="block text-xs uppercase font-bold dynamic-text-muted tracking-wide">Select Your Account Role</label>
-                    <select id="auth-role" class="w-full p-3 rounded-xl bg-neutral-800 border border-neutral-500 mt-1 focus:outline-none focus:border-emerald-500 text-inherit">
+                    <!-- Added dynamic-select wrapper class to fix light theme color contrast -->
+                    <select id="auth-role" class="w-full p-3 rounded-xl border border-neutral-500 mt-1 focus:outline-none focus:border-emerald-500 dynamic-select font-semibold">
                         <option value="spectator">Spectator (View Scores Only)</option>
                         <option value="umpire">Umpire (Modify & Setup Scores)</option>
                     </select>
@@ -112,6 +134,9 @@
             </div>
         </section>
 
+        <!-- ========================================== -->
+        <!-- 1. TOSS & SETUP SCREEN (UMPIRE ONLY)       -->
+        <!-- ========================================== -->
         <section id="setup-screen" class="hidden dynamic-card p-6 rounded-2xl shadow-xl space-y-6 mt-4 border transition-colors">
             <h2 class="text-xl font-bold text-center border-b border-neutral-700/30 pb-3">Match Setup & Toss</h2>
             
@@ -142,6 +167,9 @@
             </div>
         </section>
 
+        <!-- ========================================== -->
+        <!-- 2. SPECTATOR LIVE SCORE VIEW SCREEN        -->
+        <!-- ========================================== -->
         <section id="user-screen" class="hidden space-y-4 mt-4">
             <div id="main-scorecard" class="bg-neutral-800 text-white p-6 rounded-2xl shadow-xl border border-neutral-700/60 transition-all">
                 <div class="flex justify-between items-center text-xs uppercase font-bold tracking-widest opacity-80">
@@ -173,6 +201,9 @@
             </div>
         </section>
 
+        <!-- ========================================== -->
+        <!-- 3. SPECTATOR MATCH HISTORY VIEW SCREEN     -->
+        <!-- ========================================== -->
         <section id="history-screen" class="hidden dynamic-card p-6 rounded-2xl shadow-xl space-y-4 border mt-4">
             <h2 class="text-xl font-black text-center text-emerald-400">Match History Logs</h2>
             <p class="text-xs dynamic-text-muted text-center">Review preceding matches played this season.</p>
@@ -195,8 +226,12 @@
             </div>
         </section>
 
+        <!-- ========================================== -->
+        <!-- 4. UMPIRE CONTROL PANEL (UMPIRE ONLY)      -->
+        <!-- ========================================== -->
         <section id="admin-screen" class="hidden space-y-4 mt-4">
             <div class="bg-emerald-500 text-neutral-950 p-3 rounded-xl font-bold text-center text-xs uppercase tracking-wider shadow font-black">Umpire Control Console</div>
+            
             <div id="control-card" class="dynamic-card p-4 rounded-2xl shadow-md space-y-4 border transition-colors">
                 <p class="text-[10px] font-bold dynamic-text-muted uppercase tracking-wider text-center">Tap to Record Ball</p>
                 <div class="grid grid-cols-4 gap-2">
@@ -215,9 +250,34 @@
                     <button onclick="addBall('W')" class="p-3 bg-rose-600 text-white font-black rounded-xl text-sm hover:bg-rose-500 transition active:scale-95 shadow cursor-pointer" type="button">WICKET</button>
                 </div>
             </div>
+            
             <div class="flex space-x-2">
                 <button onclick="undoLastBall()" class="w-1/2 py-2.5 bg-neutral-500/20 text-inherit text-xs font-bold rounded-xl tracking-wider border border-neutral-500/40 hover:bg-neutral-500/30 transition active:scale-95 cursor-pointer" type="button">↩️ UNDO BALL</button>
                 <button onclick="resetMatchData()" class="w-1/2 py-2.5 bg-rose-950/20 text-rose-500 text-xs font-bold rounded-xl tracking-wider border border-rose-900/50 hover:bg-rose-900/30 transition active:scale-95 cursor-pointer" type="button">🔄 RESET MATCH</button>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- NEW LIVE BOWLED PANEL (DASHBOARD FOR UMPIRE)-->
+            <!-- ========================================== -->
+            <div id="umpire-bowled-card" class="dynamic-card p-4 rounded-2xl shadow-md border border-dashed transition-colors space-y-3">
+                <div class="flex justify-between items-center border-b border-neutral-500/20 pb-2">
+                    <p class="text-xs font-black text-emerald-500 uppercase tracking-widest">📋 Live Match Overview Panel</p>
+                    <span id="umpire-live-overs-count" class="text-xs font-bold bg-neutral-500/10 px-2 py-0.5 rounded text-inherit">Overs: 0.0</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold dynamic-text-muted tracking-wider block">Current Score</span>
+                        <p id="umpire-live-score-text" class="text-xl font-black text-inherit">0 - 0</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] uppercase font-bold dynamic-text-muted tracking-wider block">Active Batting Team</span>
+                        <p id="umpire-live-batting-team" class="text-sm font-bold text-inherit truncate">Team Alpha</p>
+                    </div>
+                </div>
+                <div>
+                    <span class="text-[10px] uppercase font-bold dynamic-text-muted tracking-wider block mb-1.5">This Over Timeline</span>
+                    <div id="umpire-recent-balls-timeline" class="flex space-x-1.5 overflow-x-auto min-h-[32px]"></div>
+                </div>
             </div>
         </section>
 
@@ -245,7 +305,6 @@
         let currentUserRole = "spectator"; 
         let lockedTeam1 = "Team Alpha", lockedTeam2 = "Team Omega", lastWinnersLog = [];
 
-        // --- HAMBURGER DRAWER ANIMATION CONTROLLERS ---
         function toggleMenuDrawer() {
             const drawer = document.getElementById('menu-drawer');
             const innerPanel = drawer.querySelector('div');
@@ -263,7 +322,6 @@
             }
         }
 
-        // --- AUTHENTICATION STATE TRACKER ---
         function handleAuthAction(action) {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
@@ -304,11 +362,9 @@
                     hamburgerBtn.classList.remove('hidden');
                     authScreen.classList.add('hidden');
 
-                    // --- ANTI-CHEAT ROLE-BASED NAVIGATION ENGINE ---
-                    navLinksContainer.innerHTML = ''; // Wipe existing paths clean
+                    navLinksContainer.innerHTML = ''; 
                     
                     if (currentUserRole === 'umpire') {
-                        // Umpire UI Options
                         navLinksContainer.innerHTML = `
                             <button onclick="switchView('setup'); toggleMenuDrawer();" class="text-left w-full p-2.5 font-bold text-sm hover:bg-emerald-500/10 rounded-lg text-emerald-400">🏏 Setup Match / Toss</button>
                             <button onclick="switchView('admin'); toggleMenuDrawer();" class="text-left w-full p-2.5 font-bold text-sm hover:bg-emerald-500/10 rounded-lg">🎛️ Umpire Controls</button>
@@ -317,7 +373,6 @@
                         if(localMatchState.status === 'toss') switchView('setup');
                         else switchView('admin');
                     } else {
-                        // Spectator UI Options -> Completely locks out Umpire routing!
                         navLinksContainer.innerHTML = `
                             <button onclick="switchView('user'); toggleMenuDrawer();" class="text-left w-full p-2.5 font-bold text-sm hover:bg-emerald-500/10 rounded-lg text-emerald-400">📊 Live Match Score</button>
                             <button onclick="switchView('history'); toggleMenuDrawer();" class="text-left w-full p-2.5 font-bold text-sm hover:bg-emerald-500/10 rounded-lg">📜 Match History Logs</button>
@@ -439,19 +494,39 @@
                 else switchView('user');
                 return;
             }
+            
+            // Render Spectator Card Outputs
             const batTeamField = document.getElementById('user-batting-team');
-            if (!batTeamField) return;
+            if (batTeamField) {
+                batTeamField.innerText = data.battingTeam || "Batting Team";
+                document.getElementById('user-score').innerText = `${data.runs || 0} - ${data.wickets || 0}`;
+                document.getElementById('user-toss-info').innerText = data.tossText || "Awaiting match setup...";
+                const bCount = data.ballsCount || 0;
+                document.getElementById('user-overs').innerText = `(${Math.floor(bCount / 6)}.${bCount % 6} Overs)`;
+            }
 
-            batTeamField.innerText = data.battingTeam || "Batting Team";
-            document.getElementById('user-score').innerText = `${data.runs || 0} - ${data.wickets || 0}`;
-            document.getElementById('user-toss-info').innerText = data.tossText || "Awaiting match setup...";
-            const bCount = data.ballsCount || 0;
-            document.getElementById('user-overs').innerText = `(${Math.floor(bCount / 6)}.${bCount % 6} Overs)`;
+            // Render Umpire Panel Live Status Overrides (Solves Umpire View Blindness)
+            const umpScore = document.getElementById('umpire-live-score-text');
+            if (umpScore) {
+                const bCount = data.ballsCount || 0;
+                umpScore.innerText = `${data.runs || 0} - ${data.wickets || 0}`;
+                document.getElementById('umpire-live-batting-team').innerText = data.battingTeam || "TBD";
+                document.getElementById('umpire-live-overs-count').innerText = `Overs: ${Math.floor(bCount / 6)}.${bCount % 6}`;
+            }
 
+            // Render Timelines for Spectator Row
             const streamContainer = document.getElementById('user-recent-balls');
-            streamContainer.innerHTML = '';
-            if (Array.isArray(data.ballsHistory)) {
-                data.ballsHistory.slice(-6).forEach(ball => {
+            if (streamContainer) buildTimelinePills(streamContainer, data.ballsHistory);
+
+            // Render Timelines for Umpire Dynamic Bowled Panel Row
+            const umpireStreamContainer = document.getElementById('umpire-recent-balls-timeline');
+            if (umpireStreamContainer) buildTimelinePills(umpireStreamContainer, data.ballsHistory);
+        }
+
+        function buildTimelinePills(container, historyArray) {
+            container.innerHTML = '';
+            if (Array.isArray(historyArray)) {
+                historyArray.slice(-6).forEach(ball => {
                     const pill = document.createElement('span');
                     pill.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-xs font-black shadow-sm ";
                     if (ball === '4') pill.className += "bg-teal-600 text-white";
@@ -459,7 +534,8 @@
                     else if (ball === 'W') pill.className += "bg-rose-600 text-white animate-bounce";
                     else if (ball === 'Wd' || ball === 'Nb') pill.className += "bg-amber-500 text-slate-950";
                     else pill.className += isDarkMode ? "bg-neutral-700 text-neutral-300" : "bg-neutral-200 text-neutral-600";
-                    pill.innerText = ball; streamContainer.appendChild(pill);
+                    pill.innerText = ball; 
+                    container.appendChild(pill);
                 });
             }
         }
