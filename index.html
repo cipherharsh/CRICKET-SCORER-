@@ -383,11 +383,14 @@
             </div>
         </section>
 
-        <!-- FULL SCORECARD SCREEN -->
+        <!-- FULL SCORECARD SCREEN (WITH SERIES HISTORY) -->
         <section id="scorecard-screen" class="max-w-md mx-auto hidden space-y-4 mt-4 pb-12">
-            <h2 class="text-xl font-black text-center text-emerald-400">Match Scorecard</h2>
+            <h2 id="scorecard-header-title" class="text-xl font-black text-center text-emerald-400">Match 1 Scorecard</h2>
             <div id="scorecard-team1-container" class="dynamic-card p-4 rounded-2xl shadow-md border space-y-3"></div>
             <div id="scorecard-team2-container" class="dynamic-card p-4 rounded-2xl shadow-md border space-y-3"></div>
+            
+            <!-- NEW SERIES HISTORY ARCHIVE -->
+            <div id="series-history-container" class="hidden mt-6 space-y-2"></div>
         </section>
 
         <!-- SPECTATOR HISTORY LOGS -->
@@ -669,7 +672,8 @@
                 team1: "Team Alpha", team2: "Team Omega", bat1Name: "Ankit", bat1Runs: 0, bat1Balls: 0,
                 bat2Name: "Aryan", bat2Runs: 0, bat2Balls: 0, activeStriker: 1, bowlName: "Vivek", bowlBalls: 0, bowlRuns: 0, bowlWickets: 0,
                 team1Captain: "", team2Captain: "", team1Squad: "", team2Squad: "",
-                innings: 1, playerStats: {}, totalOvers: 4, target: 0, winnerText: ""
+                innings: 1, playerStats: {}, totalOvers: 4, target: 0, winnerText: "",
+                matchNumber: 1, seriesHistory: []
             };
         }
 
@@ -716,14 +720,16 @@
                 bat2Name: document.getElementById('input-bat2').value, bat2Runs: 0, bat2Balls: 0,
                 activeStriker: 1, bowlName: document.getElementById('input-bowl').value, bowlBalls: 0, bowlRuns: 0, bowlWickets: 0,
                 team1Captain: document.getElementById('input-cap1').value || "", team2Captain: document.getElementById('input-cap2').value || "", team1Squad: squads.s1.join(', '), team2Squad: squads.s2.join(', '),
-                totalOvers: parseInt(document.getElementById('input-total-overs').value) || 4, innings: 1, target: 0, playerStats: {}
+                totalOvers: parseInt(document.getElementById('input-total-overs').value) || 4, innings: 1, target: 0, playerStats: {},
+                matchNumber: localMatchState.matchNumber || 1, seriesHistory: localMatchState.seriesHistory || []
             };
             matchRef.set(payloadState).then(() => { switchView('admin'); });
         }
 
+        // REMATCH UPDATED: Automatically archives the finished match into series history
         function triggerRematchFlow(focusOnSquads) {
             if (currentUserRole !== 'umpire') return;
-            if (!confirm("Start a Rematch? This resets the scoreboard but keeps your teams intact.")) return;
+            if (!confirm("Start a Rematch? This archives the current match to History and resets the scoreboard.")) return;
             
             const preservedState = getInitialCleanState();
             preservedState.team1 = localMatchState.team1 || "Team Alpha";
@@ -733,6 +739,22 @@
             preservedState.team1Squad = localMatchState.team1Squad || "";
             preservedState.team2Squad = localMatchState.team2Squad || "";
             preservedState.totalOvers = localMatchState.totalOvers || 4;
+            
+            preservedState.matchNumber = (localMatchState.matchNumber || 1) + 1;
+            let historyArchive = localMatchState.seriesHistory ? [...localMatchState.seriesHistory] : [];
+            
+            let t1ScoreStr = localMatchState.inning1Data ? `${localMatchState.inning1Data.team}: ${localMatchState.inning1Data.runs}/${localMatchState.inning1Data.wickets}` : "DNB";
+            let t2ScoreStr = `${localMatchState.battingTeam}: ${localMatchState.runs}/${localMatchState.wickets}`;
+            
+            historyArchive.push({
+                matchNum: localMatchState.matchNumber || 1,
+                result: localMatchState.winnerText || "Match Abandoned",
+                mom: localMatchState.mom || "N/A",
+                score1: t1ScoreStr,
+                score2: t2ScoreStr
+            });
+            
+            preservedState.seriesHistory = historyArchive;
 
             matchRef.set(preservedState).then(() => {
                 document.getElementById('toss-result-text').innerText = '';
@@ -847,7 +869,6 @@
             state.playerStats[bn].wickets += 1;
             state.playerStats[bn].bowlRuns += wRuns;
 
-            // BUGFIX FOR TURF RULES: Wicket on No Ball perfectly increments legal ball count now
             state.ballsCount += 1; 
             state.bowlBalls += 1; 
             state.playerStats[bn].bowlBalls += 1;
@@ -989,6 +1010,7 @@
             fresh.status = "live"; fresh.team1 = localMatchState.team1; fresh.team2 = localMatchState.team2; fresh.battingTeam = localMatchState.battingTeam;
             fresh.tossText = localMatchState.tossText; fresh.innings = localMatchState.innings; fresh.totalOvers = localMatchState.totalOvers; fresh.target = localMatchState.target;
             fresh.bat1Name = localMatchState.bat1Name; fresh.bat2Name = localMatchState.bat2Name; fresh.bowlName = localMatchState.bowlName;
+            fresh.matchNumber = localMatchState.matchNumber; fresh.seriesHistory = localMatchState.seriesHistory;
 
             let br = currentUserRole; currentUserRole = 'umpire'; localMatchState = fresh;
             
@@ -1082,7 +1104,8 @@
                 bat2Name: document.getElementById('next-bat2').value, bat2Runs: 0, bat2Balls: 0,
                 activeStriker: 1, bowlName: document.getElementById('next-bowl').value, bowlBalls: 0, bowlRuns: 0, bowlWickets: 0,
                 innings: 2, target: newTarget, totalOvers: localMatchState.totalOvers, team1Squad: localMatchState.team1Squad, team2Squad: localMatchState.team2Squad,
-                playerStats: localMatchState.playerStats || {}
+                playerStats: localMatchState.playerStats || {},
+                matchNumber: localMatchState.matchNumber || 1, seriesHistory: localMatchState.seriesHistory || []
             };
             matchRef.set(secondInningsState).then(() => { document.getElementById('innings-modal').classList.add('hidden'); });
         }
@@ -1245,6 +1268,13 @@
         }
 
         function renderFullScorecard(data) {
+            
+            // NEW: Render the specific Match Title dynamically
+            const scorecardHeader = document.getElementById('scorecard-header-title');
+            if (scorecardHeader) {
+                scorecardHeader.innerText = `Match ${data.matchNumber || 1} Scorecard`;
+            }
+
             const buildTeamScorecard = (teamName, squadString, inningDataObj, isCurrentBatting) => {
                 let runs = 0, wickets = 0, overs = "0.0", rr = "0.00";
                 if (inningDataObj) {
@@ -1335,9 +1365,38 @@
                 t1Container.innerHTML = buildTeamScorecard(data.team1, data.team1Squad, t1InningData, t1CurrentBatting);
                 t2Container.innerHTML = buildTeamScorecard(data.team2, data.team2Squad, t2InningData, t2CurrentBatting);
             }
+
+            // NEW: RENDER THE SERIES HISTORY ARCHIVE
+            const seriesHistoryContainer = document.getElementById('series-history-container');
+            if (seriesHistoryContainer && data.seriesHistory && data.seriesHistory.length > 0) {
+                seriesHistoryContainer.classList.remove('hidden');
+                
+                let historyHtml = '<h3 class="font-black text-emerald-400 uppercase tracking-widest border-b border-neutral-500/20 pb-2 mb-3 mt-4 text-[10px]">📚 Previous Matches</h3>';
+                
+                // Reverse it so the most recently played match is at the top of the history list
+                const reversedHistory = [...data.seriesHistory].reverse();
+                
+                reversedHistory.forEach(match => {
+                    historyHtml += `
+                    <div class="dynamic-card p-4 rounded-xl border border-neutral-500/20 mb-3 shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-black bg-emerald-600 text-white px-2 py-0.5 rounded shadow">MATCH ${match.matchNum}</span>
+                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider">🌟 MOM: ${match.mom}</span>
+                        </div>
+                        <p class="text-xs font-black text-white mb-2 pb-2 border-b border-neutral-500/10">${match.result}</p>
+                        <div class="flex justify-between items-center text-[10px] font-bold dynamic-text-muted">
+                            <span>1st INN: <span class="text-white">${match.score1}</span></span>
+                            <span>2nd INN: <span class="text-white">${match.score2}</span></span>
+                        </div>
+                    </div>`;
+                });
+                
+                seriesHistoryContainer.innerHTML = historyHtml;
+            } else if (seriesHistoryContainer) {
+                seriesHistoryContainer.classList.add('hidden');
+            }
         }
 
-        // BUGFIX: W+Nb now visually acts as a valid ball in the timeline separator logic
         function buildTimelinePills(container, historyArray, shouldSlice) {
             if (!container) return; container.innerHTML = ''; if (!Array.isArray(historyArray)) return;
             const pool = shouldSlice ? historyArray.slice(-6) : historyArray; let lb = 0; let oi = 1;
@@ -1347,8 +1406,6 @@
                 if (ball === '4') p.className += "bg-teal-600 text-white"; else if (ball === '6') p.className += "bg-indigo-600 text-white"; else if (ball.startsWith('W')) p.className += "bg-rose-600 text-white animate-pulse";
                 else if (ball.startsWith('Nb') || ball === 'Wd') p.className += "bg-amber-500 text-neutral-900"; else p.className += isDarkMode ? "bg-neutral-700 text-white" : "bg-neutral-200 text-neutral-800";
                 p.innerText = ball; container.appendChild(p);
-                
-                // Timeline no longer skips W+Nb when tracking the current over length
                 if (!shouldSlice && ball !== 'Wd' && !ball.startsWith('Nb')) { lb++; if (lb === 6) { lb = 0; const d = document.createElement('div'); d.className = "flex h-8 border-r-2 border-dashed border-emerald-500/60 mr-1"; d.innerHTML = `<span class="text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded">Ov ${oi}</span>`; container.appendChild(d); oi++; } }
             });
         }
