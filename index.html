@@ -133,9 +133,25 @@
                 <span class="text-3xl animate-bounce inline-block">☝️</span>
                 <h3 class="text-lg font-black text-rose-500 mt-1">Wicket Fallen!</h3>
             </div>
-            <div>
-                <label class="text-[10px] uppercase font-bold dynamic-text-muted block mb-1">Incoming Batsman Name</label>
-                <select id="input-incoming-batsman" class="w-full p-3 rounded-xl text-sm font-bold text-emerald-400 cursor-pointer dynamic-input"></select>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] uppercase font-bold dynamic-text-muted block mb-1">Runs Completed</label>
+                    <select id="wicket-runs" class="w-full p-3 rounded-xl text-sm font-bold cursor-pointer dynamic-input">
+                        <option value="0">0 Runs (Bowled / Caught / LBW)</option>
+                        <option value="nb_out">1 Run (Out on No Ball)</option>
+                        <option value="1">1 Run (Run Out on 2nd run)</option>
+                        <option value="2">2 Runs (Run Out on 3rd run)</option>
+                        <option value="3">3 Runs (Run Out on 4th run)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold dynamic-text-muted block mb-1">Who Got Out?</label>
+                    <select id="wicket-out-player" class="w-full p-3 rounded-xl text-sm font-bold cursor-pointer dynamic-input"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold dynamic-text-muted block mb-1">Incoming Batsman Name</label>
+                    <select id="input-incoming-batsman" class="w-full p-3 rounded-xl text-sm font-bold text-emerald-400 cursor-pointer dynamic-input"></select>
+                </div>
             </div>
             <button onclick="confirmWicketReplacement()" class="w-full py-3 bg-rose-600 text-white font-black rounded-xl text-xs uppercase tracking-wider transition cursor-pointer" type="button">Resume Match</button>
         </div>
@@ -212,7 +228,6 @@
                 📊 Live Dashboard Counter — Total Registered Match Members: <span id="live-total-combined-count" class="text-sm px-1.5 py-0.5 rounded bg-emerald-500 text-neutral-950 font-black">0</span>
             </div>
 
-            <!-- TOTAL OVERS CONFIGURATION -->
             <div class="max-w-md mx-auto p-4 bg-black/10 rounded-xl border border-neutral-700/30 space-y-2">
                 <label class="block text-xs uppercase font-black text-emerald-500 tracking-wider text-center">⏱️ Match Format (Total Overs)</label>
                 <input type="number" id="input-total-overs" value="4" min="1" max="50" class="w-32 p-2.5 rounded-xl font-black text-center mx-auto block text-lg dynamic-input">
@@ -341,16 +356,18 @@
                 </div>
                 <div class="border-t border-neutral-500/20 pt-2">
                     <div class="grid grid-cols-12 text-[10px] font-bold dynamic-text-muted uppercase tracking-wider pb-1.5 border-b border-neutral-500/20">
-                        <span class="col-span-5">Bowling</span>
+                        <span class="col-span-4">Bowling</span>
                         <span class="col-span-2 text-center">O</span>
+                        <span class="col-span-2 text-center">R</span>
                         <span class="col-span-2 text-center">W</span>
-                        <span class="col-span-3 text-center">Econ</span>
+                        <span class="col-span-2 text-center">Econ</span>
                     </div>
                     <div class="grid grid-cols-12 text-sm font-semibold pt-2">
-                        <span class="col-span-5 text-inherit truncate" id="user-bowl-name">Bowler</span>
+                        <span class="col-span-4 text-inherit truncate" id="user-bowl-name">Bowler</span>
                         <span class="col-span-2 text-center text-inherit font-bold" id="user-bowl-overs">0.0</span>
+                        <span class="col-span-2 text-center text-inherit font-bold" id="user-bowl-runs">0</span>
                         <span class="col-span-2 text-center text-rose-500 font-black" id="user-bowl-wickets">0</span>
-                        <span class="col-span-3 text-center dynamic-text-muted text-xs flex items-center justify-center" id="user-bowl-econ">0.00</span>
+                        <span class="col-span-2 text-center dynamic-text-muted text-xs flex items-center justify-center" id="user-bowl-econ">0.00</span>
                     </div>
                 </div>
             </div>
@@ -366,17 +383,11 @@
             </div>
         </section>
 
-        <!-- FULL SCORECARD SCREEN (NEW: Issue #3) -->
+        <!-- FULL SCORECARD SCREEN -->
         <section id="scorecard-screen" class="max-w-md mx-auto hidden space-y-4 mt-4 pb-12">
             <h2 class="text-xl font-black text-center text-emerald-400">Match Scorecard</h2>
-            
-            <div id="scorecard-team1-container" class="dynamic-card p-4 rounded-2xl shadow-md border space-y-3">
-                <!-- Data populated dynamically via JS -->
-            </div>
-            
-            <div id="scorecard-team2-container" class="dynamic-card p-4 rounded-2xl shadow-md border space-y-3">
-                <!-- Data populated dynamically via JS -->
-            </div>
+            <div id="scorecard-team1-container" class="dynamic-card p-4 rounded-2xl shadow-md border space-y-3"></div>
+            <div id="scorecard-team2-container" class="dynamic-card p-4 rounded-2xl shadow-md border space-y-3"></div>
         </section>
 
         <!-- SPECTATOR HISTORY LOGS -->
@@ -409,23 +420,23 @@
                     <div class="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-500/20">
                         <button onclick="addBall('Wd')" class="p-3 bg-amber-600 text-white font-bold rounded-xl text-sm hover:bg-amber-500 transition shadow cursor-pointer" type="button">Wide</button>
                         <button onclick="triggerNoBallModal()" class="p-3 bg-amber-600 text-white font-black rounded-xl text-xs hover:bg-amber-500 shadow cursor-pointer" type="button">No Ball+Run</button>
-                        <button onclick="addBall('W')" class="p-3 bg-rose-600 text-white font-black rounded-xl text-sm hover:bg-rose-500 transition shadow cursor-pointer" type="button">WICKET</button>
+                        <button onclick="triggerWicketModal()" class="p-3 bg-rose-600 text-white font-black rounded-xl text-sm hover:bg-rose-500 transition shadow cursor-pointer" type="button">WICKET</button>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-3 gap-1.5 mb-1.5">
                     <button onclick="undoLastBall()" class="py-2.5 bg-neutral-500/20 text-inherit text-[10px] font-bold rounded-xl tracking-wider border border-neutral-500/40 hover:bg-neutral-500/30 transition cursor-pointer" type="button">↩️ UNDO</button>
                     <button onclick="clearMatchHistory()" class="py-2.5 bg-neutral-500/20 text-inherit text-[10px] font-bold rounded-xl tracking-wider border border-neutral-500/40 hover:bg-neutral-500/30 transition cursor-pointer" type="button">🗑️ CLEAR LOGS</button>
-                    <button onclick="resetMatchData()" class="py-2.5 bg-rose-950/20 text-rose-500 text-[10px] font-bold rounded-xl tracking-wider border border-rose-900/40 hover:bg-rose-900/20 transition cursor-pointer" type="button">🔄 RESET MATCH</button>
+                    <button onclick="triggerInningsOver()" class="py-2.5 bg-amber-500/20 text-amber-400 text-[10px] font-black rounded-xl tracking-wider border border-amber-900/40 hover:bg-amber-900/20 transition cursor-pointer" type="button">🛑 END INNINGS</button>
                 </div>
                 <div class="grid grid-cols-2 gap-1.5">
-                    <button onclick="triggerInningsOver()" class="py-2.5 bg-amber-500/20 text-amber-400 text-[10px] font-black rounded-xl tracking-wider border border-amber-900/40 hover:bg-amber-900/20 transition cursor-pointer" type="button">🛑 END INNINGS</button>
                     <button onclick="triggerMatchFinishedManual()" class="py-2.5 bg-blue-500/20 text-blue-400 text-[10px] font-black rounded-xl tracking-wider border border-blue-900/40 hover:bg-blue-900/20 transition cursor-pointer" type="button">🏆 END MATCH</button>
+                    <button onclick="resetMatchData()" class="py-2.5 bg-rose-950/20 text-rose-500 text-[10px] font-bold rounded-xl tracking-wider border border-rose-900/40 hover:bg-rose-900/20 transition cursor-pointer" type="button">⚠️ HARD RESET</button>
                 </div>
             </div>
 
             <!-- LIVE BOWLED PANEL -->
-            <div id="umpire-bowled-card" class="dynamic-card p-4 rounded-2xl shadow-md border border-dashed transition-colors space-y-3 mt-4">
+            <div id="umpire-bowled-card" class="dynamic-card p-4 rounded-2xl shadow-md border border-dashed transition-colors space-y-3 mt-4 mb-4">
                 <div class="flex justify-between items-center border-b border-neutral-500/20 pb-2">
                     <p class="text-xs font-black text-emerald-500 uppercase tracking-widest">📋 Live Match Overview Panel</p>
                     <span id="umpire-live-overs-count" class="text-xs font-bold bg-neutral-500/10 px-2 py-0.5 rounded text-inherit">Overs: 0.0</span>
@@ -446,6 +457,15 @@
                 <div>
                     <span class="text-[10px] uppercase font-bold dynamic-text-muted tracking-wider block mb-1.5">Match History Timeline (Swipe/Scroll ↔️)</span>
                     <div id="umpire-recent-balls-timeline" class="flex flex-nowrap items-center overflow-x-auto whitespace-nowrap gap-2 pb-2 min-h-[44px] custom-slider"></div>
+                </div>
+                <div class="pt-2">
+                    <span class="text-[10px] uppercase font-bold dynamic-text-muted tracking-wider block mb-1.5">Detailed Over Delivery Logs</span>
+                    <div id="detailed-delivery-history-umpire" class="space-y-2 max-h-[160px] overflow-y-auto custom-slider pr-1 text-xs"></div>
+                </div>
+
+                <div id="post-match-actions" class="hidden grid-cols-2 gap-2 pt-3 border-t border-neutral-500/20 mt-2">
+                    <button onclick="triggerRematchFlow(true)" class="py-2.5 bg-neutral-700 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider transition cursor-pointer shadow-md" type="button">➕ ADD PLAYER</button>
+                    <button onclick="triggerRematchFlow(false)" class="py-2.5 bg-emerald-600 text-white font-black rounded-xl text-[10px] uppercase tracking-wider transition cursor-pointer shadow-md" type="button">🔁 REMATCH</button>
                 </div>
             </div>
         </section>
@@ -496,6 +516,24 @@
             newInput.placeholder = "Enter Player Name";
             newInput.setAttribute('oninput', 'updateLiveSquadCounts()');
             container.appendChild(newInput);
+            updateLiveSquadCounts();
+        }
+
+        function repopulateSquadInputs(teamNum, squadString) {
+            const container = document.getElementById(`squad${teamNum}-box-container`);
+            if(!container) return;
+            container.innerHTML = '';
+            const players = squadString ? squadString.split(',').map(s=>s.trim()) : [];
+            players.forEach(p => {
+                if(p) {
+                    const newInput = document.createElement('input');
+                    newInput.type = 'text'; 
+                    newInput.className = `squad${teamNum}-player-input w-full p-2 rounded-lg text-xs mt-1.5 dynamic-input`;
+                    newInput.value = p;
+                    newInput.setAttribute('oninput', 'updateLiveSquadCounts()');
+                    container.appendChild(newInput);
+                }
+            });
             updateLiveSquadCounts();
         }
 
@@ -604,8 +642,16 @@
             isDarkMode = !isDarkMode;
             document.getElementById('body-theme').classList.toggle('light-theme');
             const sc = document.getElementById('main-scorecard');
-            if(isDarkMode) { sc.className = "bg-neutral-800 text-white p-6 rounded-2xl shadow-xl border border-neutral-700/60"; document.getElementById('user-score').className="text-5xl font-black tracking-tight text-emerald-400"; }
-            else { sc.className = "bg-gradient-to-br from-emerald-600 to-teal-700 p-6 rounded-2xl shadow-lg text-white"; document.getElementById('user-score').className="text-5xl font-black tracking-tight text-white"; }
+            const userScore = document.getElementById('user-score');
+            if (!isDarkMode) {
+                document.getElementById('btn-theme-toggle').innerText = "🌙 Theme"; body.classList.add('light-theme');
+                sc.className = "bg-gradient-to-br from-emerald-600 to-teal-700 p-6 rounded-2xl shadow-lg text-white transition-all";
+                userScore.className = "text-5xl font-black tracking-tight text-white";
+            } else {
+                document.getElementById('btn-theme-toggle').innerText = "☀️ Theme"; body.classList.remove('light-theme');
+                sc.className = "bg-neutral-800 text-white p-6 rounded-2xl shadow-xl border border-neutral-700/60 transition-all";
+                userScore.className = "text-5xl font-black tracking-tight text-emerald-400";
+            }
         }
 
         matchRef.on("value", (snapshot) => {
@@ -656,6 +702,7 @@
             populateSelectDropdown('input-bowl', finalSelectedBattingSide === t1 ? squads.s2 : squads.s1);
 
             document.getElementById('setup-lineup-box').classList.remove('hidden');
+            document.getElementById('setup-lineup-box').scrollIntoView({ behavior: 'smooth' });
         }
 
         function launchMatchEngine() {
@@ -668,15 +715,52 @@
                 bat1Name: document.getElementById('input-bat1').value, bat1Runs: 0, bat1Balls: 0,
                 bat2Name: document.getElementById('input-bat2').value, bat2Runs: 0, bat2Balls: 0,
                 activeStriker: 1, bowlName: document.getElementById('input-bowl').value, bowlBalls: 0, bowlRuns: 0, bowlWickets: 0,
-                team1Squad: squads.s1.join(', '), team2Squad: squads.s2.join(', '),
+                team1Captain: document.getElementById('input-cap1').value || "", team2Captain: document.getElementById('input-cap2').value || "", team1Squad: squads.s1.join(', '), team2Squad: squads.s2.join(', '),
                 totalOvers: parseInt(document.getElementById('input-total-overs').value) || 4, innings: 1, target: 0, playerStats: {}
             };
             matchRef.set(payloadState).then(() => { switchView('admin'); });
         }
 
-        // ISSUE #1: Unlocked button bypass requirement
+        function triggerRematchFlow(focusOnSquads) {
+            if (currentUserRole !== 'umpire') return;
+            if (!confirm("Start a Rematch? This resets the scoreboard but keeps your teams intact.")) return;
+            
+            const preservedState = getInitialCleanState();
+            preservedState.team1 = localMatchState.team1 || "Team Alpha";
+            preservedState.team2 = localMatchState.team2 || "Team Omega";
+            preservedState.team1Captain = localMatchState.team1Captain || "";
+            preservedState.team2Captain = localMatchState.team2Captain || "";
+            preservedState.team1Squad = localMatchState.team1Squad || "";
+            preservedState.team2Squad = localMatchState.team2Squad || "";
+            preservedState.totalOvers = localMatchState.totalOvers || 4;
+
+            matchRef.set(preservedState).then(() => {
+                document.getElementById('toss-result-text').innerText = '';
+                document.getElementById('toss-decision-box').classList.add('hidden');
+                document.getElementById('setup-lineup-box').classList.add('hidden');
+                
+                document.getElementById('input-team1').value = preservedState.team1;
+                document.getElementById('input-team2').value = preservedState.team2;
+                document.getElementById('input-cap1').value = preservedState.team1Captain;
+                document.getElementById('input-cap2').value = preservedState.team2Captain;
+                document.getElementById('input-total-overs').value = preservedState.totalOvers;
+
+                repopulateSquadInputs(1, preservedState.team1Squad);
+                repopulateSquadInputs(2, preservedState.team2Squad);
+
+                switchView('setup');
+                
+                if (focusOnSquads) {
+                    setTimeout(() => { document.getElementById('squad1-box-container').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+                } else {
+                    setTimeout(() => { document.getElementById('visual-coin').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+                }
+            });
+        }
+
         function triggerNoBallModal() {
             if (currentUserRole !== 'umpire') return;
+            if (localMatchState.status === 'finished') { alert("Match is completed."); return; }
             document.getElementById('noball-modal').classList.remove('hidden');
         }
 
@@ -689,7 +773,7 @@
             let sn = state.activeStriker === 1 ? state.bat1Name : state.bat2Name;
             
             state.detailedHistory.push({
-                over: `${Math.floor(state.ballsCount/6)}.${state.ballsCount%6}`, 
+                over: `${Math.floor(state.ballsCount/6)}.${(state.ballsCount % 6) + 1}`, 
                 batter: sn, bowler: state.bowlName, outcome: recordLabel,
                 innings: state.innings || 1
             });
@@ -707,9 +791,125 @@
             if (batRuns === 1 || batRuns === 3) { state.activeStriker = state.activeStriker === 1 ? 2 : 1; }
 
             if(state.innings === 2 && state.runs >= state.target) {
-                state.status = 'finished'; state.winnerText = `🏆 ${state.battingTeam} won the match by chasing down the target!`; calculateMom(state);
+                state.status = 'finished'; state.winnerText = `🏆 ${state.battingTeam} won the match!`; calculateMom(state);
             }
             matchRef.set(state);
+        }
+
+        function triggerWicketModal() {
+            if (currentUserRole !== 'umpire') return;
+            if (localMatchState.status === 'finished') { alert("Match is completed."); return; }
+            
+            const outPlayerSelect = document.getElementById('wicket-out-player');
+            outPlayerSelect.innerHTML = `
+                <option value="1">${localMatchState.bat1Name} ${localMatchState.activeStriker === 1 ? '(Striker)' : '(Non-Striker)'}</option>
+                <option value="2">${localMatchState.bat2Name} ${localMatchState.activeStriker === 2 ? '(Striker)' : '(Non-Striker)'}</option>
+            `;
+            
+            const squads = getSquadLists(); 
+            populateSelectDropdown('input-incoming-batsman', localMatchState.battingTeam === localMatchState.team1 ? squads.s1 : squads.s2);
+            
+            document.getElementById('wicket-runs').value = "0"; 
+            document.getElementById('wicket-modal').classList.remove('hidden');
+        }
+
+        function confirmWicketReplacement() {
+            let state = JSON.parse(JSON.stringify(localMatchState));
+            if (!state.ballsHistory) state.ballsHistory = []; if (!state.detailedHistory) state.detailedHistory = []; if (!state.playerStats) state.playerStats = {};
+            
+            let bn = state.bowlName;
+            let strikerName = state.activeStriker === 1 ? state.bat1Name : state.bat2Name;
+            
+            const selectedWicketValue = document.getElementById('wicket-runs').value;
+            const isNoBallWicket = selectedWicketValue === 'nb_out';
+            const wRuns = isNoBallWicket ? 1 : (parseInt(selectedWicketValue) || 0);
+
+            const outId = parseInt(document.getElementById('wicket-out-player').value);
+            const nextBatsmanName = document.getElementById('input-incoming-batsman').value.trim() || "Next Bat";
+            
+            if (!state.playerStats[bn]) state.playerStats[bn] = { runs: 0, wickets: 0, balls: 0, bowlBalls: 0, bowlRuns: 0 };
+            if (!state.playerStats[strikerName]) state.playerStats[strikerName] = { runs: 0, wickets: 0, balls: 0, bowlBalls: 0, bowlRuns: 0 };
+            if (!state.playerStats[nextBatsmanName]) state.playerStats[nextBatsmanName] = { runs: 0, wickets: 0, balls: 0, bowlBalls: 0, bowlRuns: 0 };
+            
+            const wLabel = isNoBallWicket ? 'W+Nb' : (wRuns > 0 ? `W+${wRuns}` : 'W');
+            state.ballsHistory.push(wLabel);
+            
+            state.detailedHistory.push({
+                over: `${Math.floor(state.ballsCount/6)}.${(state.ballsCount % 6) + 1}`, 
+                batter: strikerName, bowler: bn, outcome: wLabel,
+                innings: state.innings || 1
+            });
+
+            state.runs += wRuns;
+            state.bowlRuns += wRuns; 
+            state.wickets += 1; 
+            state.bowlWickets += 1; 
+            state.playerStats[bn].wickets += 1;
+            state.playerStats[bn].bowlRuns += wRuns;
+
+            if (!isNoBallWicket) {
+                state.ballsCount += 1; 
+                state.bowlBalls += 1; 
+                state.playerStats[bn].bowlBalls += 1;
+                
+                if (state.activeStriker === 1) { 
+                    state.bat1Runs += wRuns; 
+                } else { 
+                    state.bat2Runs += wRuns; 
+                }
+                state.playerStats[strikerName].runs += wRuns;
+            }
+
+            if (state.activeStriker === 1) { 
+                state.bat1Balls += 1; 
+            } else { 
+                state.bat2Balls += 1; 
+            }
+            state.playerStats[strikerName].balls += 1;
+            
+            if (outId === 1) {
+                state.bat1Name = nextBatsmanName; state.bat1Runs = 0; state.bat1Balls = 0;
+            } else {
+                state.bat2Name = nextBatsmanName; state.bat2Runs = 0; state.bat2Balls = 0;
+            }
+
+            if (!isNoBallWicket && (wRuns === 1 || wRuns === 3)) {
+                state.activeStriker = state.activeStriker === 1 ? 2 : 1;
+            }
+
+            const squads = getSquadLists();
+            
+            if(state.innings === 2 && state.runs >= state.target) {
+                state.status = 'finished'; state.winnerText = `🏆 ${state.battingTeam} won the match!`; calculateMom(state);
+                matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); return;
+            }
+
+            if (state.wickets >= (state.battingTeam === state.team1 ? squads.s1.length : squads.s2.length) - 1) {
+                if(state.innings === 1) triggerInningsOver(state);
+                else {
+                    state.status = 'finished'; let bowlTeam = state.battingTeam === state.team1 ? state.team2 : state.team1;
+                    if(state.runs === state.target - 1) state.winnerText = "⚖️ Match Tied!"; 
+                    else state.winnerText = `🏆 ${bowlTeam} won the match!`;
+                    calculateMom(state);
+                }
+                matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); return;
+            }
+
+            if (!isNoBallWicket && state.ballsCount % 6 === 0 && state.ballsCount > 0) {
+                if (state.ballsCount >= state.totalOvers * 6) {
+                    if(state.innings === 1) triggerInningsOver(state);
+                    else {
+                        state.status = 'finished'; let bowlTeam = state.battingTeam === state.team1 ? state.team2 : state.team1;
+                        if(state.runs === state.target - 1) state.winnerText = "⚖️ Match Tied!"; 
+                        else state.winnerText = `🏆 ${bowlTeam} won the match!`;
+                        calculateMom(state);
+                    }
+                    matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); return;
+                }
+                state.activeStriker = state.activeStriker === 1 ? 2 : 1;
+                populateSelectDropdown('input-new-bowler', state.battingTeam === state.team1 ? squads.s2 : squads.s1);
+                matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); document.getElementById('new-bowler-modal').classList.remove('hidden'); });
+            } else { matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); }
         }
 
         function addBall(outcome) {
@@ -721,14 +921,9 @@
             if (!state.playerStats[sn]) state.playerStats[sn] = { runs: 0, wickets: 0, balls: 0, bowlBalls: 0, bowlRuns: 0 }; 
             if (!state.playerStats[bn]) state.playerStats[bn] = { runs: 0, wickets: 0, balls: 0, bowlBalls: 0, bowlRuns: 0 };
 
-            if (outcome === 'W') {
-                const squads = getSquadLists(); populateSelectDropdown('input-incoming-batsman', state.battingTeam === state.team1 ? squads.s1 : squads.s2);
-                document.getElementById('wicket-modal').classList.remove('hidden'); return;
-            }
-
             state.ballsHistory.push(outcome);
             state.detailedHistory.push({
-                over: `${Math.floor(state.ballsCount/6)}.${state.ballsCount%6}`, 
+                over: `${Math.floor(state.ballsCount/6)}.${(state.ballsCount % 6) + 1}`, 
                 batter: sn, bowler: bn, outcome: outcome,
                 innings: state.innings || 1
             });
@@ -752,7 +947,7 @@
             if (runsScoredOnBall === 1 || runsScoredOnBall === 3) { state.activeStriker = state.activeStriker === 1 ? 2 : 1; }
 
             if(state.innings === 2 && state.runs >= state.target) {
-                state.status = 'finished'; state.winnerText = `🏆 ${state.battingTeam} won the match by chasing down the target!`; calculateMom(state);
+                state.status = 'finished'; state.winnerText = `🏆 ${state.battingTeam} won the match!`; calculateMom(state);
                 matchRef.set(state); return;
             }
 
@@ -762,7 +957,7 @@
                     else {
                         state.status = 'finished'; let bowlTeam = state.battingTeam === state.team1 ? state.team2 : state.team1;
                         if(state.runs === state.target - 1) state.winnerText = "⚖️ Match Tied!";
-                        else state.winnerText = `🏆 ${bowlTeam} won the match by defending their target score!`;
+                        else state.winnerText = `🏆 ${bowlTeam} won the match!`;
                         calculateMom(state);
                     }
                     matchRef.set(state); return;
@@ -780,73 +975,70 @@
             matchRef.set(state).then(() => { document.getElementById('new-bowler-modal').classList.add('hidden'); });
         }
 
-        function confirmWicketReplacement() {
-            let state = JSON.parse(JSON.stringify(localMatchState));
-            if (!state.ballsHistory) state.ballsHistory = []; if (!state.detailedHistory) state.detailedHistory = []; if (!state.playerStats) state.playerStats = {};
-            let sn = state.activeStriker === 1 ? state.bat1Name : state.bat2Name; let bn = state.bowlName;
-            if (!state.playerStats[bn]) state.playerStats[bn] = { runs: 0, wickets: 0, balls: 0, bowlBalls: 0, bowlRuns: 0 };
-            if (!state.playerStats[sn]) state.playerStats[sn] = { runs: 0, wickets: 0, balls: 0, bowlBalls: 0, bowlRuns: 0 };
-            
-            state.ballsHistory.push('W'); 
-            state.detailedHistory.push({
-                over: `${Math.floor(state.ballsCount/6)}.${state.ballsCount%6}`, 
-                batter: sn, bowler: bn, outcome: 'W',
-                innings: state.innings || 1
-            });
-
-            state.ballsCount += 1; state.bowlBalls += 1; state.wickets += 1; state.bowlWickets += 1; 
-            state.playerStats[bn].wickets += 1;
-            state.playerStats[bn].bowlBalls += 1;
-            state.playerStats[sn].balls += 1;
-
-            if (state.activeStriker === 1) { state.bat1Balls += 1; state.bat1Name = document.getElementById('input-incoming-batsman').value; state.bat1Runs = 0; state.bat1Balls = 0; } 
-            else { state.bat2Balls += 1; state.bat2Name = document.getElementById('input-incoming-batsman').value; state.bat2Runs = 0; state.bat2Balls = 0; }
-
-            const squads = getSquadLists();
-            if (state.wickets >= (state.battingTeam === state.team1 ? squads.s1.length : squads.s2.length) - 1) {
-                if(state.innings === 1) triggerInningsOver(state);
-                else {
-                    state.status = 'finished'; let bowlTeam = state.battingTeam === state.team1 ? state.team2 : state.team1;
-                    if(state.runs === state.target - 1) state.winnerText = "⚖️ Match Tied!"; 
-                    else state.winnerText = `🏆 ${bowlTeam} won the match by defending their target score!`;
-                    calculateMom(state);
-                }
-                matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); return;
-            }
-
-            if (state.ballsCount % 6 === 0 && state.ballsCount > 0) {
-                if (state.ballsCount >= state.totalOvers * 6) {
-                    if(state.innings === 1) triggerInningsOver(state);
-                    else {
-                        state.status = 'finished'; let bowlTeam = state.battingTeam === state.team1 ? state.team2 : state.team1;
-                        if(state.runs === state.target - 1) state.winnerText = "⚖️ Match Tied!"; 
-                        else state.winnerText = `🏆 ${bowlTeam} won the match by defending their target score!`;
-                        calculateMom(state);
-                    }
-                    matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); return;
-                }
-                state.activeStriker = state.activeStriker === 1 ? 2 : 1;
-                populateSelectDropdown('input-new-bowler', state.battingTeam === state.team1 ? squads.s2 : squads.s1);
-                matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); document.getElementById('new-bowler-modal').classList.remove('hidden'); });
-            } else { matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); }
-        }
-
         function undoLastBall() {
             if (currentUserRole !== 'umpire') return;
-            let hist = localMatchState.ballsHistory ? [...localMatchState.ballsHistory] : []; let det = localMatchState.detailedHistory ? [...localMatchState.detailedHistory] : [];
-            if (hist.length === 0) return; hist.pop(); if (det.length > 0) det.pop();
+            let hist = localMatchState.ballsHistory ? [...localMatchState.ballsHistory] : []; 
+            let det = localMatchState.detailedHistory ? [...localMatchState.detailedHistory] : [];
+            if (hist.length === 0) return; 
+            
+            hist.pop(); 
+            if (det.length > 0) det.pop();
+            
             let fresh = getInitialCleanState();
             fresh.status = "live"; fresh.team1 = localMatchState.team1; fresh.team2 = localMatchState.team2; fresh.battingTeam = localMatchState.battingTeam;
             fresh.tossText = localMatchState.tossText; fresh.innings = localMatchState.innings; fresh.totalOvers = localMatchState.totalOvers; fresh.target = localMatchState.target;
             fresh.bat1Name = localMatchState.bat1Name; fresh.bat2Name = localMatchState.bat2Name; fresh.bowlName = localMatchState.bowlName;
 
             let br = currentUserRole; currentUserRole = 'umpire'; localMatchState = fresh;
+            
             hist.forEach(b => {
-                if (b === 'W') {
-                    state.ballsHistory.push('W'); state.ballsCount += 1; state.bowlBalls += 1; state.wickets += 1; state.bowlWickets += 1;
-                    if (state.activeStriker === 1) { state.bat1Balls += 1; } else { state.bat2Balls += 1; }
-                } else if (b.startsWith('Nb')) { confirmNoBallScore(b.includes('+') ? parseInt(b.split('+')[1]) : 0); }
-                else { addBall(b); }
+                if (b.startsWith('W')) {
+                    const isNbWicket = b === 'W+Nb';
+                    const wRuns = isNbWicket ? 1 : (b.includes('+') ? parseInt(b.split('+')[1]) : 0);
+                    
+                    localMatchState.ballsHistory.push(b); 
+                    localMatchState.wickets += 1; 
+                    localMatchState.bowlWickets += 1;
+                    localMatchState.runs += wRuns; 
+                    localMatchState.bowlRuns += wRuns;
+
+                    if (!isNbWicket) {
+                        localMatchState.ballsCount += 1; 
+                        localMatchState.bowlBalls += 1;
+                    }
+                    
+                    if (localMatchState.activeStriker === 1) { 
+                        localMatchState.bat1Balls += 1; 
+                        if (!isNbWicket) localMatchState.bat1Runs += wRuns; 
+                    } else { 
+                        localMatchState.bat2Balls += 1; 
+                        if (!isNbWicket) localMatchState.bat2Runs += wRuns; 
+                    }
+                    
+                    if (!isNbWicket && (wRuns === 1 || wRuns === 3)) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
+                    if (!isNbWicket && localMatchState.ballsCount % 6 === 0 && localMatchState.ballsCount > 0) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
+                } else if (b.startsWith('Nb')) { 
+                    localMatchState.ballsHistory.push(b);
+                    const nbRuns = b.includes('+') ? parseInt(b.split('+')[1]) : 0;
+                    localMatchState.runs += (1 + nbRuns);
+                    localMatchState.bowlRuns += (1 + nbRuns);
+                    if (localMatchState.activeStriker === 1) { 
+                        localMatchState.bat1Runs += nbRuns; localMatchState.bat1Balls += 1; 
+                    } else { 
+                        localMatchState.bat2Runs += nbRuns; localMatchState.bat2Balls += 1; 
+                    }
+                    if (nbRuns === 1 || nbRuns === 3) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
+                } else if (b === 'Wd') {
+                    localMatchState.ballsHistory.push(b);
+                    localMatchState.runs += 1; localMatchState.bowlRuns += 1;
+                } else { 
+                    localMatchState.ballsHistory.push(b);
+                    const r = parseInt(b);
+                    localMatchState.runs += r; localMatchState.ballsCount += 1; localMatchState.bowlBalls += 1; localMatchState.bowlRuns += r;
+                    if (localMatchState.activeStriker === 1) { localMatchState.bat1Runs += r; localMatchState.bat1Balls += 1; } else { localMatchState.bat2Runs += r; localMatchState.bat2Balls += 1; }
+                    if (r === 1 || r === 3) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
+                    if (localMatchState.ballsCount % 6 === 0 && localMatchState.ballsCount > 0) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
+                }
             });
             currentUserRole = br; localMatchState.detailedHistory = det; matchRef.set(localMatchState);
         }
@@ -874,7 +1066,6 @@
             let nextBatTeam = localMatchState.battingTeam === localMatchState.team1 ? localMatchState.team2 : localMatchState.team1;
             let newTarget = localMatchState.runs + 1; const totalBallsAllocated = localMatchState.totalOvers * 6;
             
-            // Backup inning 1 data for scorecard
             const inning1Data = {
                 team: localMatchState.battingTeam,
                 runs: localMatchState.runs,
@@ -914,7 +1105,7 @@
             calculateMom(state); matchRef.set(state);
         }
 
-        function resetMatchData() { if (currentUserRole === 'umpire' && confirm("Reset entire match?")) matchRef.set(getInitialCleanState()).then(() => switchView('setup')); }
+        function resetMatchData() { if (currentUserRole === 'umpire' && confirm("WARNING: This will erase the current match completely. Are you sure?")) matchRef.set(getInitialCleanState()).then(() => switchView('setup')); }
 
         function renderScoreboard(data) {
             const fbs = document.getElementById('match-finished-banner'); const fbu = document.getElementById('umpire-finished-banner');
@@ -924,25 +1115,39 @@
                 const rm = `${data.winnerText || 'Match Concluded!'} Score: ${data.runs}-${data.wickets}. 🌟 Man of the Match: ${data.mom || 'N/A'}`;
                 if (fbs) { fbs.innerText = rm; fbs.classList.remove('hidden'); } if (fbu) { fbu.innerText = rm; fbu.classList.remove('hidden'); }
                 if (cp) cp.classList.add('hidden'); if (lb) { lb.innerText = "Finished"; lb.className = "px-2 py-0.5 rounded-full bg-blue-600 text-white text-[10px] uppercase font-black"; }
+                
+                const postMatchActions = document.getElementById('post-match-actions');
+                if(postMatchActions && currentUserRole === 'umpire') { postMatchActions.classList.remove('hidden'); postMatchActions.classList.add('grid'); }
             } else {
                 if (fbs) fbs.classList.add('hidden'); if (fbu) fbu.classList.add('hidden'); if (cp) cp.classList.remove('hidden');
                 if (lb) { lb.innerText = "Live"; lb.className = "px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] uppercase font-black tracking-wider animate-pulse shadow-sm"; }
+                
+                const postMatchActions = document.getElementById('post-match-actions');
+                if(postMatchActions) { postMatchActions.classList.add('hidden'); postMatchActions.classList.remove('grid'); }
             }
 
             if (data.status === 'toss') { if (currentUserRole === 'umpire') switchView('setup'); else switchView('user'); return; }
 
             const bCount = data.ballsCount || 0; const os = `${Math.floor(bCount / 6)}.${bCount % 6}`;
 
-            // ISSUE #2: Target Math Formatting Implementation
-            if (data.innings === 2 && data.status !== 'finished') {
-                const ballsRemainingCount = (data.totalOvers * 6) - bCount;
-                const runsNeededCount = data.target - data.runs;
-                const dynamicTargetText = `🎯 TARGET: ${data.target} | NEED ${runsNeededCount} RUNS IN ${ballsRemainingCount} BALLS`;
-                
-                if (document.getElementById('user-toss-info')) document.getElementById('user-toss-info').innerText = dynamicTargetText;
-                
-                const umpTargetInfo = document.getElementById('umpire-target-info');
-                if(umpTargetInfo) { umpTargetInfo.innerText = dynamicTargetText; umpTargetInfo.classList.remove('hidden'); }
+            // ISSUE FIX: Proper UI Display based on match status
+            if (data.innings === 2) {
+                if (data.status !== 'finished') {
+                    const ballsRemainingCount = (data.totalOvers * 6) - bCount;
+                    const runsNeededCount = data.target - data.runs;
+                    const dynamicTargetText = `🎯 TARGET: ${data.target} | NEED ${runsNeededCount} RUNS IN ${ballsRemainingCount} BALLS`;
+                    
+                    if (document.getElementById('user-toss-info')) document.getElementById('user-toss-info').innerText = dynamicTargetText;
+                    const umpTargetInfo = document.getElementById('umpire-target-info');
+                    if(umpTargetInfo) { umpTargetInfo.innerText = dynamicTargetText; umpTargetInfo.classList.remove('hidden'); }
+                } else {
+                    const matchResultStatus = data.runs >= data.target ? 'CHASE SUCCESSFUL' : (data.runs === data.target - 1 ? 'MATCH TIED' : 'CHASE FAILED');
+                    const dynamicTargetText = `🎯 TARGET: ${data.target} | FINAL SCORE: ${data.runs} (${matchResultStatus})`;
+                    
+                    if (document.getElementById('user-toss-info')) document.getElementById('user-toss-info').innerText = dynamicTargetText;
+                    const umpTargetInfo = document.getElementById('umpire-target-info');
+                    if(umpTargetInfo) { umpTargetInfo.innerText = dynamicTargetText; umpTargetInfo.classList.remove('hidden'); }
+                }
             } else {
                 if (document.getElementById('user-toss-info')) document.getElementById('user-toss-info').innerText = data.tossText || "";
                 const umpTargetInfo = document.getElementById('umpire-target-info');
@@ -962,8 +1167,13 @@
                 document.getElementById('user-bat2-name').innerText = data.bat2Name || "Bat 2"; document.getElementById('user-bat2-runs').innerText = data.bat2Runs || 0; document.getElementById('user-bat2-balls').innerText = data.bat2Balls || 0;
                 document.getElementById('user-bat2-sr').innerText = data.bat2Balls > 0 ? ((data.bat2Runs / data.bat2Balls) * 100).toFixed(2) : "0.00";
 
-                document.getElementById('user-bowl-name').innerText = data.bowlName || "Bowler"; document.getElementById('user-bowl-overs').innerText = `${Math.floor((data.bowlBalls || 0) / 6)}.${(data.bowlBalls || 0) % 6}`;
-                document.getElementById('user-bowl-wickets').innerText = data.bowlWickets || 0; document.getElementById('user-bowl-econ').innerText = (data.bowlBalls > 0 ? (data.bowlRuns / ((data.bowlBalls || 0) / 6)) : 0.00).toFixed(2);
+                document.getElementById('user-bowl-name').innerText = data.bowlName || "Bowler"; 
+                
+                const bOvers = data.bowlBalls || 0;
+                document.getElementById('user-bowl-overs').innerText = `${Math.floor(bOvers / 6)}.${bOvers % 6}`;
+                document.getElementById('user-bowl-runs').innerText = data.bowlRuns || 0;
+                document.getElementById('user-bowl-wickets').innerText = data.bowlWickets || 0; 
+                document.getElementById('user-bowl-econ').innerText = (bOvers > 0 ? (data.bowlRuns / (bOvers / 6)) : 0.00).toFixed(2);
 
                 if (data.activeStriker === 1) {
                     document.getElementById('user-bat1-dot').classList.remove('hidden'); document.getElementById('user-bat2-dot').classList.add('hidden');
@@ -985,16 +1195,30 @@
             buildTimelinePills(document.getElementById('user-recent-balls'), data.ballsHistory, true);
             buildTimelinePills(document.getElementById('umpire-recent-balls-timeline'), data.ballsHistory, false);
 
-            const activeLiveLogsContainer = document.getElementById('detailed-delivery-history');
-            if (activeLiveLogsContainer && data.detailedHistory) {
-                activeLiveLogsContainer.innerHTML = '';
+            const activeLiveLogsContainerSpectator = document.getElementById('detailed-delivery-history');
+            const activeLiveLogsContainerUmpire = document.getElementById('detailed-delivery-history-umpire');
+            
+            if (data.detailedHistory) {
                 const currentInningLogsPool = data.detailedHistory.filter(i => (i.innings || 1) === (data.innings || 1));
                 const revLive = [...currentInningLogsPool].reverse();
-                revLive.forEach(i => {
-                    const r = document.createElement('div'); r.className = "flex justify-between items-center py-1.5 border-b border-neutral-500/10";
-                    r.innerHTML = `<div><span class="font-black bg-neutral-700 text-white px-1.5 py-0.5 rounded text-[10px] mr-2">Ball ${i.over}</span> <span><span class="font-bold text-emerald-400">${i.bowler}</span> to <span class="font-bold">${i.batter}</span></span></div> <span class="font-black text-emerald-400">${i.outcome}</span>`;
-                    activeLiveLogsContainer.appendChild(r);
-                });
+                
+                if (activeLiveLogsContainerSpectator) {
+                    activeLiveLogsContainerSpectator.innerHTML = '';
+                    revLive.forEach(i => {
+                        const r = document.createElement('div'); r.className = "flex justify-between items-center py-1.5 border-b border-neutral-500/10";
+                        r.innerHTML = `<div><span class="font-black bg-neutral-700 text-white px-1.5 py-0.5 rounded text-[10px] mr-2">Ball ${i.over}</span> <span><span class="font-bold text-emerald-400">${i.bowler}</span> to <span class="font-bold">${i.batter}</span></span></div> <span class="font-black text-emerald-400">${i.outcome}</span>`;
+                        activeLiveLogsContainerSpectator.appendChild(r);
+                    });
+                }
+                
+                if (activeLiveLogsContainerUmpire) {
+                    activeLiveLogsContainerUmpire.innerHTML = '';
+                    revLive.forEach(i => {
+                        const r = document.createElement('div'); r.className = "flex justify-between items-center py-1.5 border-b border-neutral-500/10";
+                        r.innerHTML = `<div><span class="font-black bg-neutral-700 text-white px-1.5 py-0.5 rounded text-[10px] mr-2">Ball ${i.over}</span> <span><span class="font-bold text-emerald-400">${i.bowler}</span> to <span class="font-bold">${i.batter}</span></span></div> <span class="font-black text-emerald-400">${i.outcome}</span>`;
+                        activeLiveLogsContainerUmpire.appendChild(r);
+                    });
+                }
             }
 
             const spectatorHistoryTabContainer = document.getElementById('spectator-match-history-container');
@@ -1005,13 +1229,11 @@
                 revAllInningsLogs.forEach(i => {
                     const r = document.createElement('div'); 
                     r.className = "flex justify-between items-center py-2 border-b border-neutral-500/10";
-                    
                     const inningBadgeColor = (i.innings === 2) ? 'bg-indigo-600' : 'bg-teal-600';
-                    const inningBadgeText = `Innings ${i.innings || 1}`;
                     
                     r.innerHTML = `
                         <div class="flex items-center gap-2">
-                            <span class="text-[9px] font-black text-white px-1.5 py-0.5 rounded uppercase tracking-wider ${inningBadgeColor}">${inningBadgeText}</span>
+                            <span class="text-[9px] font-black text-white px-1.5 py-0.5 rounded uppercase tracking-wider ${inningBadgeColor}">Innings ${i.innings || 1}</span>
                             <span class="font-black bg-neutral-800 text-neutral-300 px-1.5 py-0.5 rounded text-[10px]">Ball ${i.over}</span> 
                             <span><span class="font-bold text-emerald-400">${i.bowler}</span> to <span class="font-bold">${i.batter}</span></span>
                         </div> 
@@ -1024,7 +1246,6 @@
             }
         }
 
-        // ISSUE #3: RENDER THE BRAND NEW SCORECARD
         function renderFullScorecard(data) {
             const buildTeamScorecard = (teamName, squadString, inningDataObj, isCurrentBatting) => {
                 let runs = 0, wickets = 0, overs = "0.0", rr = "0.00";
@@ -1074,7 +1295,7 @@
                     </div>
                     <div>
                         <div class="grid grid-cols-12 text-[10px] font-bold dynamic-text-muted uppercase pb-1 border-b border-neutral-500/10">
-                            <span class="col-span-6">Bowler</span><span class="col-span-2 text-center">O</span><span class="col-span-2 text-center">W</span><span class="col-span-2 text-center">Econ</span>
+                            <span class="col-span-4">Bowler</span><span class="col-span-2 text-center">O</span><span class="col-span-2 text-center">R</span><span class="col-span-2 text-center">W</span><span class="col-span-2 text-center">Econ</span>
                         </div>
                 `;
 
@@ -1085,8 +1306,9 @@
                         const econ = pStat.bowlBalls > 0 ? (pStat.bowlRuns / (pStat.bowlBalls/6)).toFixed(1) : "0.0";
                         html += `
                             <div class="grid grid-cols-12 text-xs font-semibold py-1 border-b border-neutral-500/5">
-                                <span class="col-span-6 truncate text-inherit">${player}</span>
+                                <span class="col-span-4 truncate text-inherit">${player}</span>
                                 <span class="col-span-2 text-center font-bold">${ov}</span>
+                                <span class="col-span-2 text-center font-bold">${pStat.bowlRuns}</span>
                                 <span class="col-span-2 text-center font-black text-rose-500">${pStat.wickets}</span>
                                 <span class="col-span-2 text-center dynamic-text-muted text-[10px]">${econ}</span>
                             </div>
@@ -1123,7 +1345,7 @@
             if (!shouldSlice && pool.length > 0) { const d = document.createElement('div'); d.className = "flex h-8 border-r-2 border-dashed border-emerald-500/60 mr-1"; d.innerHTML = `<span class="text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded">Ov ${oi}</span>`; container.appendChild(d); oi++; }
             pool.forEach((ball) => {
                 const p = document.createElement('span'); p.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-xs font-black shadow-sm z-10 ";
-                if (ball === '4') p.className += "bg-teal-600 text-white"; else if (ball === '6') p.className += "bg-indigo-600 text-white"; else if (ball === 'W') p.className += "bg-rose-600 text-white";
+                if (ball === '4') p.className += "bg-teal-600 text-white"; else if (ball === '6') p.className += "bg-indigo-600 text-white"; else if (ball.startsWith('W')) p.className += "bg-rose-600 text-white animate-pulse";
                 else if (ball.startsWith('Nb') || ball === 'Wd') p.className += "bg-amber-500 text-neutral-900"; else p.className += isDarkMode ? "bg-neutral-700 text-white" : "bg-neutral-200 text-neutral-800";
                 p.innerText = ball; container.appendChild(p);
                 if (!shouldSlice && ball !== 'Wd' && !ball.startsWith('Nb')) { lb++; if (lb === 6) { lb = 0; const d = document.createElement('div'); d.className = "flex h-8 border-r-2 border-dashed border-emerald-500/60 mr-1"; d.innerHTML = `<span class="text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded">Ov ${oi}</span>`; container.appendChild(d); oi++; } }
