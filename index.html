@@ -847,11 +847,12 @@
             state.playerStats[bn].wickets += 1;
             state.playerStats[bn].bowlRuns += wRuns;
 
+            // BUGFIX FOR TURF RULES: Wicket on No Ball perfectly increments legal ball count now
+            state.ballsCount += 1; 
+            state.bowlBalls += 1; 
+            state.playerStats[bn].bowlBalls += 1;
+            
             if (!isNoBallWicket) {
-                state.ballsCount += 1; 
-                state.bowlBalls += 1; 
-                state.playerStats[bn].bowlBalls += 1;
-                
                 if (state.activeStriker === 1) { 
                     state.bat1Runs += wRuns; 
                 } else { 
@@ -895,7 +896,7 @@
                 matchRef.set(state).then(() => { document.getElementById('wicket-modal').classList.add('hidden'); }); return;
             }
 
-            if (!isNoBallWicket && state.ballsCount % 6 === 0 && state.ballsCount > 0) {
+            if (state.ballsCount % 6 === 0 && state.ballsCount > 0) {
                 if (state.ballsCount >= state.totalOvers * 6) {
                     if(state.innings === 1) triggerInningsOver(state);
                     else {
@@ -1002,10 +1003,8 @@
                     localMatchState.runs += wRuns; 
                     localMatchState.bowlRuns += wRuns;
 
-                    if (!isNbWicket) {
-                        localMatchState.ballsCount += 1; 
-                        localMatchState.bowlBalls += 1;
-                    }
+                    localMatchState.ballsCount += 1; 
+                    localMatchState.bowlBalls += 1;
                     
                     if (localMatchState.activeStriker === 1) { 
                         localMatchState.bat1Balls += 1; 
@@ -1016,7 +1015,7 @@
                     }
                     
                     if (!isNbWicket && (wRuns === 1 || wRuns === 3)) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
-                    if (!isNbWicket && localMatchState.ballsCount % 6 === 0 && localMatchState.ballsCount > 0) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
+                    if (localMatchState.ballsCount % 6 === 0 && localMatchState.ballsCount > 0) localMatchState.activeStriker = localMatchState.activeStriker === 1 ? 2 : 1;
                 } else if (b.startsWith('Nb')) { 
                     localMatchState.ballsHistory.push(b);
                     const nbRuns = b.includes('+') ? parseInt(b.split('+')[1]) : 0;
@@ -1130,7 +1129,6 @@
 
             const bCount = data.ballsCount || 0; const os = `${Math.floor(bCount / 6)}.${bCount % 6}`;
 
-            // ISSUE FIX: Proper UI Display based on match status
             if (data.innings === 2) {
                 if (data.status !== 'finished') {
                     const ballsRemainingCount = (data.totalOvers * 6) - bCount;
@@ -1339,6 +1337,7 @@
             }
         }
 
+        // BUGFIX: W+Nb now visually acts as a valid ball in the timeline separator logic
         function buildTimelinePills(container, historyArray, shouldSlice) {
             if (!container) return; container.innerHTML = ''; if (!Array.isArray(historyArray)) return;
             const pool = shouldSlice ? historyArray.slice(-6) : historyArray; let lb = 0; let oi = 1;
@@ -1348,6 +1347,8 @@
                 if (ball === '4') p.className += "bg-teal-600 text-white"; else if (ball === '6') p.className += "bg-indigo-600 text-white"; else if (ball.startsWith('W')) p.className += "bg-rose-600 text-white animate-pulse";
                 else if (ball.startsWith('Nb') || ball === 'Wd') p.className += "bg-amber-500 text-neutral-900"; else p.className += isDarkMode ? "bg-neutral-700 text-white" : "bg-neutral-200 text-neutral-800";
                 p.innerText = ball; container.appendChild(p);
+                
+                // Timeline no longer skips W+Nb when tracking the current over length
                 if (!shouldSlice && ball !== 'Wd' && !ball.startsWith('Nb')) { lb++; if (lb === 6) { lb = 0; const d = document.createElement('div'); d.className = "flex h-8 border-r-2 border-dashed border-emerald-500/60 mr-1"; d.innerHTML = `<span class="text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded">Ov ${oi}</span>`; container.appendChild(d); oi++; } }
             });
         }
